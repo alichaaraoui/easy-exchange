@@ -12,3 +12,6 @@ Run only when the user types /implement-from-spec.
 4. Write one test per Given/When/Then.
 5. Run the tests and report pass/fail. Don't continue with failing tests.
 6. List any spec gaps you hit instead of quietly deciding them.
+7. Update the traceability table in specs/requirements.md with the test file for each FR.
+8. Add a docs/process-log.md entry: prompt, skill used, result, decisions.
+9. Commit with the task number and FR IDs, e.g. "feat(catalog): C3 FR-021 cover lookup".

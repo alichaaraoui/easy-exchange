@@ -10,7 +10,7 @@ Status: ✅ done · ⬜ to do
 | --- | --- | --- |
 | A1 ✅ | Commit plan v2 and this task list. Log that plan v2 was drafted with Claude Code from my answers. | `docs: plan v2 + tasks` is on `main`. |
 | A2 ✅ | Regenerate `specs/` from `docs/plan.md` with `/spec-writer` (and `requirements-engineering`). Keep FR-001–FR-007 IDs; new FRs continue from FR-017. | All 6 spec files match plan v2; traceability table updated; cross-check finds no contradictions. |
-| A3 ⬜ | Update the skills: `book-exchange-domain` gets categories, jacket condition, the reserved-book edit/delete rule, and an error-code table; `implement-from-spec` ends with traceability + log + commit. | Skills match plan v2 section 6. |
+| A3 ✅ | Update the skills: `book-exchange-domain` gets categories, jacket condition, the reserved-book edit/delete rule, and an error-code table; `implement-from-spec` ends with traceability + log + commit. | Skills match plan v2 section 6. |
 
 ## Phase B: M2.5 Fix-up
 

@@ -133,3 +133,15 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Decisions recorded in the specs as mine (not in the plan):** propose check order 400/404/403/409 and trade-action order 404/409/403 (carried over from v1); edit order 404/403/409/400; 3-second cover timeout; Serializable transaction for propose, with a serialization failure returned as 409.
 
 **Tests:** `npx tsc --noEmit` exits 0. `npm test` still fails in global setup (SQLite URL) until B2.
+
+---
+
+### 2026-10-06 · Specs v2 · A3 update skills
+
+**Prompt:** Task A3: `book-exchange-domain` gets categories, jacket condition, the reserved-book edit/delete rule, and an error-code table; `implement-from-spec` ends with traceability, log, and commit.
+
+**Mode / Skill:** Agent, editing the two project skills against plan v2 section 6 and `specs/api.md`.
+
+**Result:** `book-exchange-domain` now lists the 7 categories, 5 conditions, 5 jacket grades, the reserved rule (no other trade, no edit, no delete, 409), the one-transaction propose, which book goes to whom on completion, a 400/403/404/409 table, and the check order. `implement-from-spec` gains steps 7–9: update traceability, log, commit with task and FR IDs.
+
+**Decisions:** The error table and check order are copied from `specs/api.md`, not new rules.
