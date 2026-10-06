@@ -63,3 +63,26 @@ The "My judgment" line is the part that matters: what was kept, rejected, or rew
 **Result:** Wrote the six spec files. Must stories are US-01–US-15 and FR-001–FR-016. M1 is FR-001 and FR-002. M2 is FR-003–FR-007. Search, book detail, and trades stay on later milestones. Could-later items are chat, ratings, book photos, real login, and campus meetups. Payments and shipping are Won't.
 
 **My judgment:** I fixed contradictions instead of leaving two answers in place. The reserved-book line now blocks both sides of a new trade, matching FR-011. Propose checks 400, then 404, then 403, then 409, so a missing book is not also a 409. Trade actions check 409 before 403, so a legal action by the wrong person is 403 and an illegal transition is 409. The M1 header does not link to book pages that do not exist yet. I did not silently close these, and they stay under Open Questions: edit or delete of a reserved book; 409 for self-trade and reserved-book proposes (the domain skill only names 409 for illegal transitions); ISBN format; genre list; string length; substring search; blank search returns every book.
+
+---
+
+### 2026-10-06 · Build · /implement-from-spec M1 and M2
+
+**Prompt:** Ali invoked /implement-from-spec. Build v1 only: M1 scaffold and M2 my shelf. Do not build browse/search or trades.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain. Plan recorded before any application code.
+
+**FRs in this build**
+
+- M1: FR-001 (seed), FR-002 (demo-user switcher). Also NFR-001 and NFR-003, because the seed runs on SQLite and the header has no password field.
+- M2: FR-003 (add), FR-004 (edit), FR-005 (delete), FR-006 (my shelf), FR-007 (all books, no search or filter). Also NFR-004 (labels) and NFR-005 (owner comes from the actor, not the form).
+- Not in this build: FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016.
+
+**Files I will touch**
+
+- M1: `package.json`, `package-lock.json`, `tsconfig.json`, `next.config.ts`, `next-env.d.ts`, `postcss.config.mjs`, `vitest.config.ts`, `.env.example`, `app/globals.css`, `app/layout.tsx`, `app/page.tsx`, `app/actions/session.ts`, `components/header.tsx`, `lib/prisma.ts`, `lib/session.ts`, `lib/books.ts` (condition write used by FR-001-AC3 only), `prisma/schema.prisma`, `prisma/seed.ts`, `tests/global-setup.ts`, `tests/seed.test.ts`, `tests/session.test.ts`.
+- M2: `lib/validation.ts`, `lib/books.ts`, `app/actions/books.ts`, `app/page.tsx`, `app/layout.tsx`, `app/shelf/page.tsx`, `app/books/new/page.tsx`, `app/books/[id]/edit/page.tsx`, `components/header.tsx`, `components/book-fields.tsx`, `components/book-form.tsx`, `tests/books.test.ts`, `tests/forms.test.ts`.
+
+**Result:** M1 tests passed before the scaffold commit: 6 passed, 0 failed (`tests/seed.test.ts`, `tests/session.test.ts`). M2 is next.
+
+**My judgment:** I am not building search, filters, book detail, or trades. The Trade model is schema only. Edit and delete will not look at reservations, because that rule is still an open question.

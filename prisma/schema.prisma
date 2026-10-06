@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String  @id
+  name            String
+  books           Book[]  @relation("OwnedBooks")
+  tradesRequested Trade[] @relation("TradesRequested")
+  tradesReceived  Trade[] @relation("TradesReceived")
+}
+
+model Book {
+  id           String    @id
+  title        String
+  author       String
+  isbn         String
+  condition    Condition
+  genre        String
+  ownerId      String
+  owner        User      @relation("OwnedBooks", fields: [ownerId], references: [id])
+  offeredIn    Trade[]   @relation("OfferedBook")
+  requestedIn  Trade[]   @relation("RequestedBook")
+}
+
+model Trade {
+  id              String      @id @default(cuid())
+  requesterId     String
+  recipientId     String
+  offeredBookId   String
+  requestedBookId String
+  status          TradeStatus
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  requester       User        @relation("TradesRequested", fields: [requesterId], references: [id])
+  recipient       User        @relation("TradesReceived", fields: [recipientId], references: [id])
+  offeredBook     Book        @relation("OfferedBook", fields: [offeredBookId], references: [id])
+  requestedBook   Book        @relation("RequestedBook", fields: [requestedBookId], references: [id])
+}
+
+enum Condition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  COMPLETED
+}
