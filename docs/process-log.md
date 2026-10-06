@@ -86,3 +86,15 @@ The "My judgment" line is the part that matters: what was kept, rejected, or rew
 **Result:** Full Vitest run after M2: 22 passed, 0 failed. `tests/seed.test.ts` 3, `tests/session.test.ts` 3, `tests/books.test.ts` 14, `tests/forms.test.ts` 2. `npx tsc --noEmit` exited 0. Smoke test on port 43123 returned 200 for `/`, `/shelf`, `/books/new`, `/books/book_01/edit`, `/books/book_05/edit`, and `/books/book_missing/edit`. The list shows other students' books, the shelf delete button names the title, a book I do not own says I cannot edit it, and a missing id says it is not listed. The server was stopped after that check.
 
 **My judgment:** I did not build search, filters, book detail, or trades. The Trade model is schema only. I did not treat these as product rules, and I am leaving them open: edit and delete still do not look at a reserved book; if a non-owner sends a bad condition, they get 403 before 400 because I check the missing book, then the owner, then the fields; new book ids are `book_` plus a UUID; the add form preselects GOOD.
+
+---
+
+### 2026-10-06 · M2.5 · B1 merge deploy/vercel
+
+**Prompt:** Ali: "B1 first: merge the deploy/vercel branch into main so the build runs on Postgres." Task B1 in `docs/tasks.md`: merge `deploy/vercel` into `main` and commit the Neon skills (`.agents/`, `.claude/`, `skills-lock.json`) as imported skills.
+
+**Mode / Skill:** Agent. No project skill (merge and housekeeping only). The Neon skills are imported, not written here.
+
+**Result:** `main` fast-forwarded from `a7afbbe` to `91f7a3e` (`chore(deploy): switch Prisma to Postgres for Vercel`, `chore(deploy): generate Prisma client during build`). `prisma/schema.prisma` now uses `postgresql` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`. Committed `.agents/skills/neon`, `.agents/skills/neon-postgres`, the `.claude/skills` symlinks to them, and `skills-lock.json` (source `neondatabase/agent-skills`). `npx tsc --noEmit` exits 0. `npm test` fails in global setup because `vitest.config.ts` still points at `file:./test.db`, which a Postgres schema can't use. That is B2's job, and it stays failing until B2.
+
+**Decisions:** Fast-forward, so no merge commit. I did not touch the test setup in B1 because the task order puts the Postgres test database in B2.
