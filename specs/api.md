@@ -1,145 +1,143 @@
 # API
 
-Server actions for the MVP. Shapes of User, Book, and Trade are in [data-model.md](data-model.md). Acceptance criteria are in [requirements.md](requirements.md).
+Server actions and the `lib/` functions behind them (decision D3: no REST API). Shapes are in [data-model.md](data-model.md). Acceptance criteria are in [requirements.md](requirements.md).
 
-Results look like this:
+Every `lib/` function returns:
 
 - Success: `{ ok: true, ... }`
 - Failure: `{ ok: false, status: 400 | 403 | 404 | 409, message: string }`
 
-The active user comes from the cookie described in [architecture.md](architecture.md). Actions that take an actor use that user. Tests call the `lib/` functions with an actor id directly.
+Server actions read the actor from the cookie ([architecture.md](architecture.md#active-user)) and pass it as `actorId`. Tests call the `lib/` functions with an actor id directly.
+
+## Error codes
+
+| Status | Meaning |
+| --- | --- |
+| 400 | Bad or missing input: blank required field, value outside an enum, year out of range, same book on both sides of a trade. |
+| 403 | The actor isn't allowed: not the owner of the book, not the right party for that trade action. |
+| 404 | The book, trade, or user doesn't exist. |
+| 409 | The request conflicts with current state: reserved book, self-trade, transition the status doesn't allow, lost a race for the same book. |
 
 ## Session
 
 ### listUsers
 
-- **Milestone:** M1. FR-002.
-- **Input:** none.
-- **Output:** `{ ok: true, users: { id, name }[] }` in seed order: Maya Chen, Jordan Hale, Sam Rivera.
-- **Errors:** none. An empty database returns an empty array.
+- FR-002. Input: none. Output: `{ id, name }[]` in seed order Maya Chen, Jordan Hale, Sam Rivera.
 
 ### setActiveUser
 
-- **Milestone:** M1. FR-002.
-- **Input:** `userId` string.
-- **Output:** `{ ok: true, userId }`. Sets cookie `easy_exchange_user`.
-- **Errors:**
-  - 400 when `userId` is empty.
-  - 404 when no user has that id. The cookie is left as it was.
+- FR-002. Input: `userId`. Output: `{ ok: true, userId }`; sets the cookie.
+- 400 when `userId` is blank. 404 when no user has that id; the cookie is unchanged.
 
 ### getActiveUser
 
-- **Milestone:** M1. FR-002.
-- **Input:** cookie value, or absent.
-- **Output:** `{ ok: true, user }` for a known cookie. If the cookie is absent, the user is Maya Chen (`user_maya`) once seed has run.
-- **Errors:** 404 when the cookie is absent or unknown and `user_maya` is not in the database. A cookie that names a missing user falls back to Maya Chen when she exists. That fallback is not the 404 from `setActiveUser`.
+- FR-002. Input: cookie value or none. Output: the user, falling back to Maya Chen. 404 when neither exists.
 
 ## Books
 
-Validation for create and update:
+### Book input and validation
 
-- `title`, `author`, `isbn`, and `genre` are trimmed. Empty is 400.
-- `condition` must be NEW, LIKE_NEW, GOOD, FAIR, or POOR. Anything else, including USED, is 400.
-- `ownerId` in the input is ignored (NFR-005).
+Fields: `title`, `author`, `isbn`, `category`, `publisher`, `year`, `edition`, `outOfPrint`, `condition`, `jacketCondition`.
+
+- `title`, `author`, `isbn`, `publisher`: trimmed; blank is 400.
+- `category`: one of the 7 Category values, else 400 (FR-017).
+- `year`: a whole number from 1450 to the current year, else 400 (FR-018).
+- `edition`: trimmed; blank is allowed and stored as "" (FR-018).
+- `outOfPrint`: checkbox; present means true, absent means false.
+- `condition`: one of NEW, LIKE_NEW, GOOD, FAIR, POOR, else 400.
+- `jacketCondition`: one of NONE, POOR, FAIR, GOOD, FINE, else 400 (FR-019).
+- `ownerId` and `coverUrl` in the input are ignored (NFR-005).
+
+The first failing field is the one reported, in the order above. The message names the field.
 
 ### createBook
 
-- **Milestone:** M2. FR-003.
-- **Input:** `title`, `author`, `isbn`, `condition`, `genre`. Actor is the active user.
-- **Output:** `{ ok: true, book }` with `ownerId` set to the actor.
-- **Errors:** 400 on a blank field or a bad condition. No book is written.
+- FR-003, FR-017–FR-019, FR-021. Input: book input. Actor is the owner.
+- Validates, looks up the cover (`lookupCover(isbn)`), then writes. Output `{ ok: true, book }`.
+- 400 on any validation failure; nothing is written. A failed cover lookup is not an error (FR-021-AC3).
 
 ### updateBook
 
-- **Milestone:** M2. FR-004.
-- **Input:** `bookId`, `title`, `author`, `isbn`, `condition`, `genre`.
-- **Output:** `{ ok: true, book }`. `ownerId` is the same as before.
-- **Errors:**
-  - 400 on a blank field or a bad condition. Stored values stay as they were.
-  - 403 when the actor is not the owner.
-  - 404 when `bookId` is not a book.
-- **Trades:** this action does not read Trade. See Open Questions in [requirements.md](requirements.md).
+- FR-004, FR-017–FR-019, FR-021, FR-032. Input: `bookId` and book input.
+- Checks in order: 404 not a book; 403 actor isn't the owner; 409 book is reserved; 400 validation.
+- Looks up the cover again only when the trimmed ISBN differs from the stored one. Owner is unchanged.
 
 ### deleteBook
 
-- **Milestone:** M2. FR-005.
-- **Input:** `bookId`.
-- **Output:** `{ ok: true }`.
-- **Errors:**
-  - 403 when the actor is not the owner. The book stays.
-  - 404 when `bookId` is not a book.
-- **Trades:** this action does not read Trade. See Open Questions in [requirements.md](requirements.md).
+- FR-005, FR-032. Input: `bookId`.
+- Checks in order: 404, 403, 409 reserved. On success the book and its closed trades are deleted in one transaction.
 
 ### listMyBooks
 
-- **Milestone:** M2. FR-006.
-- **Input:** actor id.
-- **Output:** `{ ok: true, books }` containing only books whose `ownerId` is the actor, in seed id order, then by id for books added later.
-- **Errors:** none. No books is an empty array, not an error.
-
-### listAllBooks
-
-- **Milestone:** M2. FR-007.
-- **Input:** none. No search string and no condition.
-- **Output:** `{ ok: true, books }` for every book, in id order. `ownerName` is the related user's name, joined at read time. It is not a column on Book.
-- **Errors:** none. No books is an empty array.
-
-### getBook
-
-- **Milestone:** M3. FR-010. Not built in M1 or M2.
-- **Input:** `bookId`.
-- **Output:** `{ ok: true, book }` with title, author, isbn, condition, genre, and `ownerName`. `ownerName` is joined from User and is not a Book column.
-- **Errors:** 404 when the id is not a book.
+- FR-006. Input: actor id. Output: books the actor owns, seed ids first in id order, then later books by id.
 
 ### searchBooks
 
-- **Milestone:** M3. FR-008 and FR-009. Not built in M1 or M2.
-- **Input:** `query` string, optional `condition`.
-- **Output:** `{ ok: true, books }` whose title, author, or genre contains `query` (case-insensitive). A query that is empty or only spaces does not narrow the list. When `condition` is present, the book must also have that condition.
-- **Errors:** 400 when `condition` is present and not one of the five grades.
+- FR-007, FR-023, FR-024. Input: `{ q?, category?, condition?, outOfPrint? }`, all optional.
+- `q` is trimmed. Blank doesn't narrow. Otherwise title or author must contain it, case-insensitive.
+- `category` and `condition`: blank doesn't narrow; otherwise must be an enum value (400 if not) and must match.
+- `outOfPrint: true` keeps only out-of-print books; false or absent doesn't narrow.
+- Output `{ ok: true, books }` in id order, each with `ownerName` joined from User. With no input this is the FR-007 list (`listAllBooks`).
+
+### parseBrowseParams
+
+- FR-024-AC7. Input: URL search params `q`, `category`, `condition`, `oop`. Output: the `searchBooks` input. `oop=1` means out of print only.
+
+### getBook
+
+- FR-025. Input: `bookId`. Output `{ ok: true, book }` with every field and `ownerName`. 404 when not a book.
+
+### isReserved / listOfferableBooks
+
+- FR-032, FR-034. `isReserved(bookId)` is true when a PENDING or ACCEPTED trade references the book. `listOfferableBooks(actorId)` returns the actor's books that aren't reserved.
+
+## Covers
+
+### lookupCover
+
+- FR-021. Input: ISBN. Removes spaces and hyphens, requests `https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg?default=false` with a 3-second timeout.
+- 200 returns `https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg`. Anything else (404, other status, network error, timeout) returns null. Never throws.
 
 ## Trades
 
-Not built in M1 or M2. The Trade model is still created in M1.
-
-A book is reserved when any trade with status PENDING or ACCEPTED references it as offered or requested.
+A book is reserved when a PENDING or ACCEPTED trade references it as offered or requested.
 
 ### proposeTrade
 
-- **Milestone:** M4. FR-011.
-- **Input:** `offeredBookId`, `requestedBookId`. Actor is the requester.
-- **Output:** `{ ok: true, trade }` with status PENDING. `recipientId` is the owner of the requested book.
-- **Errors:** checks run in this order, and the first failure is the one returned.
-  1. 400 when either id is missing or both ids are the same.
-  2. 404 when either book does not exist.
-  3. 403 when the actor does not own the offered book.
-  4. 409 when the actor also owns the requested book.
-  5. 409 when either book is reserved.
+- FR-026. Input: `offeredBookId`, `requestedBookId`. Actor is the requester.
+- Output `{ ok: true, trade }`, status PENDING, `recipientId` = owner of the requested book.
+- Checks in order, first failure returned:
+  1. 400 either id missing, or both ids the same.
+  2. 404 either book doesn't exist.
+  3. 403 actor doesn't own the offered book.
+  4. 409 actor also owns the requested book.
+  5. 409 either book is reserved.
+- Steps 2–5 and the insert run in one Serializable transaction. A serialization failure returns 409 "One of these books was just reserved in another trade."
 
-### acceptTrade
+### acceptTrade / declineTrade / cancelTrade / completeTrade
 
-- **Milestone:** M4. FR-012 and FR-016.
-- **Input:** `tradeId`.
-- **Output:** `{ ok: true, trade }` with status ACCEPTED. Both books stay reserved.
-- **Errors:** in order: 404 if the trade does not exist; 409 if the status is not PENDING; 403 if the actor is not the recipient. Status does not change on 403 or 409.
+- FR-027–FR-031. Input: `tradeId`. Checks in order: 404 no such trade; 409 the status doesn't allow this action; 403 wrong person.
 
-### declineTrade
+| Action | Allowed from | Who | New status | Effect |
+| --- | --- | --- | --- | --- |
+| acceptTrade | PENDING | recipient | ACCEPTED | Books stay reserved. |
+| declineTrade | PENDING | recipient | DECLINED | Books released. |
+| cancelTrade | PENDING | requester | CANCELLED | Books released. |
+| completeTrade | ACCEPTED | requester or recipient | COMPLETED | Offered book → recipient, requested book → requester, in one transaction. Books released. |
 
-- **Milestone:** M4. FR-013 and FR-016.
-- **Input:** `tradeId`.
-- **Output:** `{ ok: true, trade }` with status DECLINED. Both books are no longer reserved. Owners do not change.
-- **Errors:** in order: 404 if the trade does not exist; 409 if the status is not PENDING; 403 if the actor is not the recipient. Status and owners do not change on 403 or 409.
+- On 403 or 409, status and owners don't change.
 
-### cancelTrade
+### listTrades
 
-- **Milestone:** M4. FR-014 and FR-016.
-- **Input:** `tradeId`.
-- **Output:** `{ ok: true, trade }` with status CANCELLED. Both books are no longer reserved. Owners do not change.
-- **Errors:** in order: 404 if the trade does not exist; 409 if the status is not PENDING; 403 if the actor is not the requester. Status and owners do not change on 403 or 409.
+- FR-033. Input: actor id. Output `{ received, sent }`: trades where the actor is recipient or requester, newest first, each with both book titles, both user names, status, and `actions`: the subset of `accept`, `decline`, `cancel`, `complete` the actor may take now.
 
-### completeTrade
+## Server actions
 
-- **Milestone:** M4. FR-015 and FR-016.
-- **Input:** `tradeId`.
-- **Output:** `{ ok: true, trade }` with status COMPLETED. The offered book's `ownerId` becomes `recipientId`. The requested book's `ownerId` becomes `requesterId`. Neither book stays reserved.
-- **Errors:** in order: 404 if the trade does not exist; 409 if the status is not ACCEPTED; 403 if the actor is neither the requester nor the recipient. Status and owners do not change on 403 or 409.
+| Action | Calls | On success | On failure |
+| --- | --- | --- | --- |
+| `setActiveUserAction` | setActiveUser | redirect to the same page | stays |
+| `createBookAction` | createBook | redirect `/shelf` | form shows message |
+| `updateBookAction` | updateBook | redirect `/shelf` | form shows message |
+| `deleteBookAction` | deleteBook | redirect `/shelf` | edit page shows message |
+| `proposeTradeAction` | proposeTrade | redirect `/trades?proposed={tradeId}` | detail page shows message |
+| `tradeAction` (accept/decline/cancel/complete) | the matching function | redirect `/trades` | `/trades` shows message |

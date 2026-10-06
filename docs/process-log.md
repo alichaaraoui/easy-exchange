@@ -110,3 +110,26 @@ The "My judgment" line is the part that matters: what was kept, rejected, or rew
 **Result:** Committed `docs/plan.md` (plan v2: architecture and art books, collector fields, categories, Open Library covers, Neon Postgres, decisions D1–D6, milestones M1–M7) and `docs/tasks.md` (phases A–G). B1 and A1 are marked done.
 
 **Decisions:** Plan v2 was drafted with Claude Code from Ali's answers to its questions; I committed it as written and did not edit its content. Plan v1 stays in git history, as the plan says.
+
+---
+
+### 2026-10-06 · Specs v2 · A2 regenerate specs
+
+**Prompt:** Task A2: regenerate `specs/` from `docs/plan.md` with spec-writer and requirements-engineering. Keep FR-001–FR-007; new FRs start at FR-017. Stop and ask Ali if anything is unclear.
+
+**Mode / Skill:** requirements-engineering (stories, INVEST, MoSCoW, NFRs, traceability), then spec-writer (stable IDs, Given/When/Then, a failure case per FR, Open Questions), with book-exchange-domain for the trade rules.
+
+**Result:** Rewrote all six spec files for plan v2. Stories US-01–US-07 kept, US-16–US-31 new. FR-001–FR-007 kept; only "genre" became "category" in FR-003-AC1. FR-008–FR-016 retired, never reused, with a table mapping each to its replacement. New FRs: FR-017 category, FR-018 publisher/year/edition/out of print, FR-019 jacket condition, FR-020 seed catalog, FR-021 cover lookup, FR-022 cover or placeholder, FR-023 search, FR-024 filters, FR-025 detail, FR-026 propose (one transaction, race test), FR-027–FR-031 accept/decline/cancel/complete/other transitions, FR-032 reserved books locked, FR-033 inbox (Should), FR-034 disabled propose (Should). NFR-001 is now Postgres with a separate test database; NFR-006–NFR-009 cover phone width, cover lookup only on save with a 3 s limit, the Playwright swap, and alt text. `data-model.md` holds the 12 seed copies with condition, jacket, and out-of-print values (the plan delegates those to this file). Cross-check: every FR in `api.md`, `ui.md`, and `architecture.md` exists in `requirements.md`; no spec mentions genre or SQLite except as history.
+
+**Questions I stopped on, and Ali's answers (all proposed defaults accepted):**
+1. Required fields and year range: publisher and year required, year a whole number 1450–current year, edition optional.
+2. Deleting a book with closed trades: the closed trades are deleted with it.
+3. Live data: `.env.local` `DATABASE_URL` is production. The C1 migration clears books and trades; the C2 seed loads the 12 books.
+4. FR IDs: retire FR-008–FR-016; new from FR-017; FR-001–FR-007 keep IDs, genre → category only.
+5. Filters: "Out of print only" checkbox; condition filter uses book condition only.
+6. Playwright: locally, then once against the live site with its own books, cleaned up afterwards.
+Also approved: test database `easy_exchange_test` in the same Neon project; seed `coverUrl` straight from the plan table.
+
+**Decisions recorded in the specs as mine (not in the plan):** propose check order 400/404/403/409 and trade-action order 404/409/403 (carried over from v1); edit order 404/403/409/400; 3-second cover timeout; Serializable transaction for propose, with a serialization failure returned as 409.
+
+**Tests:** `npx tsc --noEmit` exits 0. `npm test` still fails in global setup (SQLite URL) until B2.

@@ -1,82 +1,108 @@
 # UI
 
-Screens for the MVP. What each control does is in [api.md](api.md). Copy below is the text on the page, not placeholder text.
+Screens and copy. What each control calls is in [api.md](api.md). Copy below is the real text on the page.
 
-The header is on every page.
+## Layout and visual rules
+
+- Works from 375 px wide upward with no horizontal scrolling (NFR-006). Book grids are 2 columns on phones, 3 on tablets, 4 on desktop.
+- Covers are shown at a 2:3 ratio. The image keeps its proportions inside that box.
+- Placeholder (FR-022): same 2:3 box, a flat muted background, the title and author as text. No `<img>`, so it can't break.
+- Every image has alt "Cover of {title} by {author}" (NFR-009).
+- Errors are shown as text near the control, not by color alone.
+- The design pass in M6 applies an imported design skill to every page within these rules.
 
 ## Header
 
 - Wordmark: Easy Exchange.
-- M1 links: none. The header is the wordmark and the switcher.
-- M2 links: All books, My shelf, Add a book.
-- Trades is added in M4, when that page exists. It is not in the M1 or M2 header.
-- Switcher label: "Acting as". The control is a `<select>` of the seeded names plus a button, "Switch".
-- No password field and no sign-up link (NFR-003).
-- Every control has a visible label (NFR-004).
+- Links: Browse, My shelf, Add a book, Trades.
+- Switcher: label "Acting as", a `<select>` of the seeded names, and a "Switch" button.
+- No password field and no sign-up link (NFR-003). Every control has a visible label (NFR-004).
 
-## All books (`/`)
+## Browse (`/`)
 
-**M2, FR-007.** Built as a list, not a search page.
+FR-007, FR-023, FR-024.
 
-- Heading: All books.
-- One line under it: "Every book a student has listed. Search comes later."
-- Each book shows title, author, condition, genre, and owner name.
-- No search box. No condition filter. Those are M3, on this same page, for FR-008 and FR-009.
-- Empty state: "No books are listed yet."
+- Heading: Browse.
+- Line: "Architecture and art books, one for one. No money changes hands."
+- Filter form (GET, so values stay in the URL):
+  - "Search title or author" text box, name `q`.
+  - "Category" select, first option "Any category", then the 7 labels.
+  - "Condition" select, first option "Any condition", then the 5 labels.
+  - "Out of print only" checkbox, name `oop`.
+  - Buttons "Search" and a "Clear" link to `/`.
+- Result line: "{n} books" ("1 book" when one).
+- Grid of book cards.
+- Empty states: no books at all: "No books are listed yet." Books exist but none match: "No books match these filters." with the "Clear" link.
+- Bad filter value in the URL (400): "That filter isn't valid." and the full list is not shown.
+
+## Book card
+
+FR-022.
+
+- Cover or placeholder, title, author, category label, condition label, owner name. "Out of print" badge when true.
+- The whole card links to `/books/{id}`.
 
 ## My shelf (`/shelf`)
 
-**M2, FR-006.**
+FR-006.
 
 - Heading: My shelf.
 - Line: "Books you own. Only you can change them."
-- Each of my books shows title, author, condition, genre, and ISBN, with links "Edit" and "Delete".
-- Delete asks for a confirm in the form button label "Delete {title}" so the action is explicit. No extra page.
-- Empty state: "You have no books listed yet."
-- I do not see edit or delete on books I do not own, because those books are not on this page.
+- Each book: cover or placeholder, title, author, category, condition, ISBN, links "Edit" and a "Delete {title}" button.
+- A reserved book shows "In an open trade" instead of Edit and Delete (FR-032).
+- Empty state: "You have no books listed yet." with a link "Add a book".
 
 ## Add a book (`/books/new`)
 
-**M2, FR-003.**
+FR-003, FR-017–FR-019, FR-021.
 
 - Heading: Add a book.
-- Fields, each with a visible label: Title, Author, ISBN, Condition, Genre.
-- Condition is a `<select>` of NEW, LIKE_NEW, GOOD, FAIR, POOR. The labels a person sees are New, Like new, Good, Fair, and Poor. The stored values stay the five grades.
-- Button: "Add book".
-- On 400, the form stays and the message says which field failed. The message is text, not color alone.
-- On success, go to My shelf.
+- Fields, each with a visible label, in this order: Title, Author, ISBN, Category (select), Publisher, Year (number), Edition (optional), Out of print (checkbox), Condition (select), Jacket condition (select).
+- Edition's label reads "Edition (optional)".
+- Selects show labels from [data-model.md](data-model.md#enums) and submit enum values.
+- Line under ISBN: "We look up the cover on Open Library by ISBN."
+- Button: "Add book". On 400 the form keeps the entered values and shows the message. On success go to My shelf.
 
 ## Edit a book (`/books/[id]/edit`)
 
-**M2, FR-004 and FR-005.**
+FR-004, FR-005, FR-032.
 
-- Heading: Edit book.
-- Same fields as add, filled with the current book.
-- Buttons: "Save" and "Delete {title}".
-- If I am not the owner, I do not get the form. The page says "You can only edit a book you own." That is the 403.
-- If the id is not a book, the page says "That book is not listed." That is the 404.
-- On success after save or delete, go to My shelf.
+- Heading: Edit book. Same fields as add, filled in. Buttons "Save" and "Delete {title}".
+- Not the owner (403): "You can only edit a book you own." No form.
+- Not a book (404): "That book is not listed."
+- Reserved (409): "This book is in an open trade, so it can't be edited or deleted until the trade closes." No form.
+- On success go to My shelf.
 
 ## Book detail (`/books/[id]`)
 
-**M3, FR-010.** Not built in M1 or M2.
+FR-025, FR-026, FR-034.
 
-- Shows title, author, ISBN, condition, genre, and owner name.
-- No photo, rating, or chat.
-- Unknown id uses the same not-listed message as edit.
-- A "Propose a trade" control waits for M4. It is not on the M2 pages.
+- Cover or placeholder, large. Title as heading, author under it.
+- A definition list: ISBN, Category, Publisher, Year, Edition ("—" when blank), Out of print (Yes / No), Condition, Jacket condition, Owner.
+- Propose section, heading "Propose a trade":
+  - My own book: "This is your book." and an "Edit" link. No form.
+  - Book is reserved: "This book is in an open trade and can't be requested right now." No form.
+  - I have unreserved books: label "Offer one of your books", a select of my unreserved books (title — condition), button "Propose a trade".
+  - I have none (FR-034): the button is disabled and the page says "You have no books free to offer. Add a book or wait for one of your trades to close."
+  - On failure the message shows above the form.
+- Unknown id: 404 page "That book is not listed." with a link "Back to Browse".
 
-## Trades inbox (`/trades`)
+## Trades (`/trades`)
 
-**M4, FR-011 through FR-016.** Not built in M1 or M2.
+FR-027–FR-031, FR-033.
 
 - Heading: Trades.
-- Lists trades where I am the requester or the recipient, with status and the two book titles.
-- Accept and Decline show only for the recipient on a PENDING trade.
-- Cancel shows only for the requester on a PENDING trade.
-- Mark completed shows for either party on an ACCEPTED trade.
-- No other actions.
+- After a proposal: "Trade proposed. Both books are reserved until {recipient name} responds."
+- Two sections: "Received" and "Sent".
+- Each trade: "{requester} offers {offered title} for {requested title}", the status label, and the date.
+- Buttons, only these:
+  - Received + PENDING: "Accept", "Decline".
+  - Sent + PENDING: "Cancel".
+  - ACCEPTED, either side: "Mark completed".
+  - DECLINED, CANCELLED, COMPLETED: none.
+- Empty: "No trades received yet." / "No trades sent yet."
+- An action failure shows its message at the top of the page.
 
-## Later, not on these screens
+## Not on these screens
 
-Chat, ratings, book photos, real login, and campus meetups do not get buttons or fields in this UI.
+Photo uploads, multi-book offers, chat, ratings, real login, and campus meetups get no buttons or fields.

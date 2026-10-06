@@ -1,42 +1,54 @@
 # Product
 
+Source: [docs/plan.md](../docs/plan.md) (plan v2). Requirements are in [requirements.md](requirements.md).
+
 ## Vision
 
-Easy Exchange is how I swap a book I own for a book another student owns. One book for one book. No payment and no shipping.
+Easy Exchange is a one-for-one exchange for architecture and art books. Students and collectors swap books they own for books they want. No money changes hands.
+
+Every listing shows the cover and the collector details that matter for these books: publisher, year, edition, whether it is out of print, and the condition of the book and its dust jacket.
 
 ## Personas
 
-**Student with books to trade.** I am a university student. I own books I am finished with, and I want books other students already have. I list mine, look through theirs, and propose a swap. I use a demo-user switcher in this version because real login is later.
+**Primary: Lena, architecture student (24).** In a graduate architecture program. Owns theory readers and a few monographs from past studios. Wants specific books for her thesis but can't spend $90 on a used catalogue. Cares about finding a specific title fast and knowing the condition before she offers anything. Lena is the reason search and categories exist.
 
-**The other student.** Same person, other side of the trade. They receive my proposal, accept or decline it, and can mark an accepted trade completed. I do not have a separate admin, seller, or courier.
+**Secondary: Marcus, designer and collector (38).** Collects architecture monographs and exhibition catalogues. Has duplicates and books outside his focus. Cares about edition, out-of-print status, and jacket condition. Marcus is the reason the collector fields exist.
 
-## MVP scope
+Both use the same features. Neither has an admin role.
 
-- Seeded demo users and a switcher.
-- Add, edit, delete, and view books I own. One owner per book. Only the owner edits or deletes.
-- A plain list of every book, then search by title, author, and genre, and a condition filter.
-- Book detail: title, author, ISBN, condition, genre, owner.
-- Propose one of my books for one of theirs.
-- Recipient accepts or declines. Requester cancels only while pending. Either party marks an accepted trade completed, and the books swap owners.
-- Condition grades: NEW, LIKE_NEW, GOOD, FAIR, POOR.
-- Trade states: PENDING, ACCEPTED, DECLINED, CANCELLED, COMPLETED, with only the transitions in [architecture.md](architecture.md).
+## MVP scope (Must)
 
-## Non-goals
+- Seeded demo users and an "Acting as" switcher.
+- Add, edit, delete my books; My shelf; list of all books.
+- Book fields: title, author, ISBN, category, publisher, year, edition, out of print, condition, jacket condition.
+- Cover image from Open Library by ISBN, with a placeholder fallback.
+- Search by title or author; filter by category, condition, and out of print.
+- Book detail page.
+- Propose a 1-for-1 trade; accept, decline, cancel; complete with ownership swap.
+- Deployed on Vercel with Neon Postgres.
 
-Not in this version:
+## Should
 
-- Payments
-- Shipping
-- Chat
-- Ratings
-- Book photos
-- Real login
-- Campus meetups
+- A Trades inbox split into "Received" and "Sent".
+- "Propose a trade" is disabled when I have no unreserved books to offer, with a message explaining why.
 
-Chat, ratings, book photos, real login, and campus meetups are later ideas. They are not MVP features. See [requirements.md](requirements.md).
+## Could (later, not built)
+
+- Owner photo uploads of their actual copy.
+- Multi-book offers.
+- Chat between traders, ratings, real login, campus meetups.
+
+## Won't
+
+- Payments, shipping, selling.
+
+## Success criteria
+
+The measurable criteria are plan v2 section 3. Each maps to requirements in the traceability table in [requirements.md](requirements.md#traceability).
 
 ## Assumptions
 
-- Three named demo users and twelve books are enough to try both sides of a trade.
-- The student using the switcher is the actor for every edit, delete, and trade action.
-- Completing a trade only changes owners in the app. Meeting in person is a later feature.
+- Three demo users and twelve real books are enough to try both sides of a trade.
+- The user picked in the switcher is the actor for every add, edit, delete, and trade action.
+- Completing a trade only changes owners in the app. Meeting up happens outside it.
+- All data is fake. Anyone can act as anyone (decision D5).
