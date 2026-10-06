@@ -201,3 +201,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** `lookupCover(isbn)` strips spaces and hyphens, requests `https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg?default=false` with a 3-second abort, and returns the URL without `?default=false` on 200, or null on anything else. It never throws. `createBook` always looks up; `updateBook` looks up only when the trimmed ISBN differs from the stored one. `tests/setup.ts` replaces `fetch` with a 404 stub before every test, so no test touches the network. Five tests, one per FR-021 criterion. Checked against the real Open Library: `1885254008` returns its URL, `0262220156` returns null. `npm test`: 41 passed, 0 failed. `npx tsc --noEmit`: 0. Deployed with the CLI (Vercel still isn't connected to GitHub).
 
 **Decisions:** AC3 has two halves. "Unreachable" goes through `createBook` with a fetch that throws. "Doesn't answer within 3 seconds" calls `lookupCover` with a 20 ms timeout and a fetch that never answers, plus a check that the default timeout is 3000 ms, so the suite doesn't wait 3 real seconds.
+
+---
+
+### 2026-10-06 · M3 · C4 add and edit forms
+
+**Prompt:** Ali invoked /implement-from-spec for C4: add/edit forms get every new field with labels; validation for year range and enum values. FR-017, FR-018, FR-019, NFR-004.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** new `lib/book-form.ts` (read FormData, map to lib input, map a Book to form values), `components/book-fields.tsx`, `components/book-form.tsx`, `app/actions/books.ts`, `app/books/new/page.tsx`, `app/books/[id]/edit/page.tsx`, `tests/forms.test.ts`.
+
+**Result:** The form has the ten fields in the `ui.md` order, each with a `<label htmlFor>`: Title, Author, ISBN (with "We look up the cover on Open Library by ISBN."), Category ("Choose a category" first), Publisher, Year (number, min 1450, max this year), "Edition (optional)", "Out of print" checkbox, Condition, Jacket condition. On a 400, the action returns the submitted values and the form re-renders with them, as `ui.md` asks. Tests: NFR-004 now checks all ten labels; new tests check the option lists and labels, that edit is filled with stored values, the checkbox parse, year bounds through the form path, and enum rejection with the field named in the message. Local check on port 43123 against the test database: `/books/new` and `/books/book_01/edit` return 200 with every field. `npm test`: 46 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** The browser `min`/`max` on Year are a convenience only; the server check in `validateBookFields` is the rule.

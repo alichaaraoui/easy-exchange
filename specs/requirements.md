@@ -330,9 +330,9 @@ FR-008 to FR-016 were the v1 search, condition filter, book detail, and trade re
 | US-03, US-04 | NFR-004 | Labels on every control | `tests/forms.test.ts` |
 | US-01 | NFR-001 | Postgres test database, migrations | `tests/global-setup.ts` (`prisma migrate deploy`), `tests/db.test.ts` |
 | all | NFR-002 | `tsc --noEmit` exits 0 | `npx tsc --noEmit` |
-| US-16 | FR-017 | AC1–AC3 | `tests/catalog.test.ts` |
-| US-17 | FR-018 | AC1–AC4 | `tests/catalog.test.ts` |
-| US-18 | FR-019 | AC1–AC2 | `tests/catalog.test.ts` |
+| US-16 | FR-017 | AC1–AC3 | `tests/catalog.test.ts`, form values in `tests/forms.test.ts` |
+| US-17 | FR-018 | AC1–AC4 | `tests/catalog.test.ts`, form year and checkbox in `tests/forms.test.ts` |
+| US-18 | FR-019 | AC1–AC2 | `tests/catalog.test.ts`, form values in `tests/forms.test.ts` |
 | US-01 | FR-020 | AC1–AC4 | `tests/seed.test.ts` |
 | US-19 | FR-021, NFR-007 | AC1–AC5 | `tests/covers.test.ts` |
 | US-20 | FR-022, NFR-009 | AC1–AC2 | `tests/cover-image.test.ts` |

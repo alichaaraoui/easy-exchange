@@ -3,41 +3,32 @@
 import { redirect } from "next/navigation";
 import { readActiveUser } from "@/app/actions/session";
 import { createBook, deleteBook, updateBook } from "@/lib/books";
-import type { BookFieldsInput } from "@/lib/validation";
+import { readBookForm, toBookInput, type BookFormValues } from "@/lib/book-form";
 
-export type FormState = { error: string };
+export type FormState = { error: string; values?: BookFormValues; attempt?: number };
 
-function readBookForm(formData: FormData): BookFieldsInput {
-  return {
-    title: String(formData.get("title") ?? ""),
-    author: String(formData.get("author") ?? ""),
-    isbn: String(formData.get("isbn") ?? ""),
-    category: String(formData.get("category") ?? ""),
-    publisher: String(formData.get("publisher") ?? ""),
-    year: String(formData.get("year") ?? ""),
-    edition: String(formData.get("edition") ?? ""),
-    outOfPrint: formData.get("outOfPrint") !== null,
-    condition: String(formData.get("condition") ?? ""),
-    jacketCondition: String(formData.get("jacketCondition") ?? ""),
-  };
+function failed(prev: FormState, message: string, values: BookFormValues): FormState {
+  return { error: message, values, attempt: (prev.attempt ?? 0) + 1 };
 }
 
-export async function createBookAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createBookAction(prev: FormState, formData: FormData): Promise<FormState> {
+  const values = readBookForm(formData);
   const user = await readActiveUser();
-  if (!user) return { error: "No demo user is available." };
+  if (!user) return failed(prev, "No demo user is available.", values);
 
-  const result = await createBook(user.id, readBookForm(formData));
-  if (!result.ok) return { error: result.message };
+  const result = await createBook(user.id, toBookInput(values));
+  if (!result.ok) return failed(prev, result.message, values);
   redirect("/shelf");
 }
 
-export async function updateBookAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function updateBookAction(prev: FormState, formData: FormData): Promise<FormState> {
+  const values = readBookForm(formData);
   const user = await readActiveUser();
-  if (!user) return { error: "No demo user is available." };
+  if (!user) return failed(prev, "No demo user is available.", values);
 
   const bookId = String(formData.get("bookId") ?? "");
-  const result = await updateBook(user.id, bookId, readBookForm(formData));
-  if (!result.ok) return { error: result.message };
+  const result = await updateBook(user.id, bookId, toBookInput(values));
+  if (!result.ok) return failed(prev, result.message, values);
   redirect("/shelf");
 }
 

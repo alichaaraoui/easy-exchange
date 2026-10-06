@@ -1,6 +1,7 @@
 import { deleteBookAction, updateBookAction } from "@/app/actions/books";
 import { readActiveUser } from "@/app/actions/session";
 import { BookForm } from "@/components/book-form";
+import { bookToFormValues } from "@/lib/book-form";
 import { findBook } from "@/lib/books";
 
 export default async function EditBookPage({
@@ -45,14 +46,7 @@ export default async function EditBookPage({
         <BookForm
           action={updateBookAction}
           submitLabel="Save"
-          values={{
-            bookId: book.id,
-            title: book.title,
-            author: book.author,
-            isbn: book.isbn,
-            condition: book.condition,
-            category: book.category,
-          }}
+          values={bookToFormValues(book)}
         />
       </div>
       <form action={deleteBookAction} className="mt-4">

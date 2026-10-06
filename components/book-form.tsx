@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { FormState } from "@/app/actions/books";
 import { BookFields } from "@/components/book-fields";
+import type { BookFormValues } from "@/lib/book-form";
 
 export function BookForm({
   action,
@@ -10,17 +11,11 @@ export function BookForm({
   submitLabel,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
-  values: {
-    bookId?: string;
-    title: string;
-    author: string;
-    isbn: string;
-    condition: string;
-    category: string;
-  };
+  values: BookFormValues;
   submitLabel: string;
 }) {
   const [state, formAction] = useActionState(action, { error: "" });
+  const shown = state.values ? { ...state.values, bookId: values.bookId } : values;
 
   return (
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
@@ -29,7 +24,7 @@ export function BookForm({
           {state.error}
         </p>
       ) : null}
-      <BookFields values={values} />
+      <BookFields key={state.attempt ?? 0} values={shown} />
       <button type="submit" className="w-fit rounded bg-stone-900 px-3 py-2 text-sm text-white">
         {submitLabel}
       </button>

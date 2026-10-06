@@ -1,5 +1,6 @@
 import { createBookAction } from "@/app/actions/books";
 import { BookForm } from "@/components/book-form";
+import { EMPTY_BOOK_FORM } from "@/lib/book-form";
 
 export default function NewBookPage() {
   return (
@@ -9,7 +10,7 @@ export default function NewBookPage() {
         <BookForm
           action={createBookAction}
           submitLabel="Add book"
-          values={{ title: "", author: "", isbn: "", condition: "GOOD", category: "ARCHITECTURE_MONOGRAPH" }}
+          values={EMPTY_BOOK_FORM}
         />
       </div>
     </section>
