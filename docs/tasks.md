@@ -35,7 +35,7 @@ Status: ✅ done · ⬜ to do
 | --- | --- | --- |
 | D1 ✅ | Search title/author, case-insensitive (`mode: "insensitive"`). | Tests for match, no match, and mixed case. |
 | D2 ✅ | Filters: category, condition, out of print; combinable with search; kept in the URL. | Tests for each filter alone and combined. |
-| D3 ⬜ | Book detail page `/books/[id]`: cover, every field, owner, 404 page. | Detail and not-found tests pass. |
+| D3 ✅ | Book detail page `/books/[id]`: cover, every field, owner, 404 page. | Detail and not-found tests pass. |
 
 ## Phase E: M5 Trades
 

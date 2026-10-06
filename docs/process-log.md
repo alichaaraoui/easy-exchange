@@ -271,3 +271,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Plan:** `lib/books.ts` (`parseBrowseParams`, filters in `searchBooks`), new `components/browse-filters.tsx`, `app/page.tsx`, `tests/browse.test.ts`.
 
 **Result:** `searchBooks` takes `{ q, category, condition, outOfPrint }`. Blank category or condition doesn't narrow; a value outside the enum returns 400 "That filter isn't valid."; `outOfPrint: true` keeps only out-of-print books. Every filter combines with AND. The form is a GET to `/` with `q`, `category` ("Any category"), `condition` ("Any condition"), and the "Out of print only" checkbox (`oop=1`), so the URL holds the state and `parseBrowseParams` reads it back into the form and the query. A bad value in the URL shows the message with a Clear link instead of a list. Seven tests, one per FR-024 criterion; AC7 also checks each filter has a label (NFR-004). Local check: `?category=PHOTOGRAPHY` 2 books, `?condition=FAIR&oop=1` 1 book, `?category=FICTION` the error. `npm test`: 59 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+---
+
+### 2026-10-06 · M4 · D3 book detail
+
+**Prompt:** Ali invoked /implement-from-spec for D3: book detail page `/books/[id]` with cover, every field, owner, and a 404 page. FR-025.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** `lib/books.ts` (`getBook`), new `components/book-details.tsx`, new `app/books/[id]/page.tsx`, new `app/books/[id]/not-found.tsx`, `components/book-card.tsx` (link to detail), new `tests/detail.test.ts`.
+
+**Result:** `getBook(id)` returns the book with `ownerName`, or 404 "That book is not listed.". The detail page shows the cover or placeholder, the title as heading, the author, and a definition list: ISBN, Category, Publisher, Year, Edition ("—" when blank), Out of print (Yes/No), Condition, Jacket condition, Owner. An unknown id calls `notFound()`, so the response is a real 404 with "That book is not listed." and "Back to Browse". Cards now link to `/books/{id}`. Two tests, one per FR-025 criterion. Local check: `/books/book_06` 200, `/books/book_nope` 404. `npm test`: 61 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** The "Propose a trade" section from `ui.md` isn't on the page yet; it belongs to E4 (FR-026, FR-034).

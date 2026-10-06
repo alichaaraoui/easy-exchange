@@ -165,6 +165,12 @@ export async function listAllBooks(): Promise<{ ok: true; books: BookView[] }> {
   return { ok: true, books: books.map(toView) };
 }
 
+export async function getBook(bookId: string): Promise<{ ok: true; book: BookView } | Failure> {
+  const book = await prisma.book.findUnique({ where: { id: bookId }, include: { owner: true } });
+  if (!book) return { ok: false, status: 404, message: "That book is not listed." };
+  return { ok: true, book: toView(book) };
+}
+
 export async function findBook(bookId: string) {
   return prisma.book.findUnique({ where: { id: bookId } });
 }
