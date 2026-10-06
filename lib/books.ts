@@ -1,4 +1,4 @@
-import type { Book } from "@prisma/client";
+import type { Book, Prisma } from "@prisma/client";
 import { lookupCover } from "@/lib/covers";
 import { prisma } from "@/lib/prisma";
 import {
@@ -104,6 +104,24 @@ export async function listMyBooks(actorId: string): Promise<{ ok: true; books: B
     include: { owner: true },
   });
   books.sort((a, b) => compareShelfIds(a.id, b.id));
+  return { ok: true, books: books.map(toView) };
+}
+
+export type BrowseQuery = { q?: string };
+
+export async function searchBooks(
+  query: BrowseQuery = {},
+): Promise<{ ok: true; books: BookView[] } | Failure> {
+  const where: Prisma.BookWhereInput = {};
+  const q = query.q?.trim();
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { author: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  const books = await prisma.book.findMany({ where, include: { owner: true }, orderBy: { id: "asc" } });
   return { ok: true, books: books.map(toView) };
 }
 

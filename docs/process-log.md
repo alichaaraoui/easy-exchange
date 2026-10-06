@@ -245,3 +245,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 | Medium | `lib/books.ts` `deleteBook` | Deleting a book that has a closed trade hits the Trade foreign key and throws. | Already scheduled: FR-032-AC3 in E3 deletes closed trades with the book. No trades exist on live yet. |
 
 **Result:** `npm test`: 48 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+---
+
+### 2026-10-06 · M4 · D1 search
+
+**Prompt:** Ali invoked /implement-from-spec for D1: search title/author, case-insensitive (`mode: "insensitive"`). FR-023 (with FR-007).
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** `lib/books.ts` (`searchBooks`), `app/page.tsx` (Browse heading, copy, search form, count, empty states), `components/header.tsx` ("All books" → "Browse" per `ui.md`), new `tests/browse.test.ts`.
+
+**Result:** `searchBooks({ q })` trims `q`. Blank doesn't narrow; otherwise title or author must contain it, with Prisma `contains` + `mode: "insensitive"`, in id order. `/` is now Browse: a GET form with "Search title or author", Search, and Clear; a count line ("12 books" / "1 book"); "No books are listed yet." when the catalog is empty; "No books match these filters." when nothing matches. Four tests, one per FR-023 criterion. Local check against the test database: `?q=KOOLHAAS` shows 2 books, `?q=zzzz` the no-match message, `/` 12 books. `npm test`: 52 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** The no-match copy says "filters" as `ui.md` wrote it, though only search exists until D2.

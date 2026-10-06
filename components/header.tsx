@@ -19,7 +19,7 @@ export function Header({
           {showBookLinks ? (
             <nav className="mt-2 flex flex-wrap gap-4 text-sm text-stone-700">
               <a href="/" className="underline-offset-4 hover:underline">
-                All books
+                Browse
               </a>
               <a href="/shelf" className="underline-offset-4 hover:underline">
                 My shelf
