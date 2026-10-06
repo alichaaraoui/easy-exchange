@@ -17,7 +17,7 @@ Status: ✅ done · ⬜ to do
 | # | Task | Done when |
 | --- | --- | --- |
 | B1 ✅ | Merge `deploy/vercel` into `main`. Commit the Neon skills (`.agents/`, `.claude/`, `skills-lock.json`) as imported skills. | `main` uses Postgres; Vercel redeploys from `main`. |
-| B2 ⬜ | Point Vitest at a separate Postgres test database (`TEST_DATABASE_URL`, e.g. a Neon branch), reset before each run. | `npm test` passes on Postgres. |
+| B2 ✅ | Point Vitest at a separate Postgres test database (`TEST_DATABASE_URL`, e.g. a Neon branch), reset before each run. | `npm test` passes on Postgres. |
 
 ## Phase C: M3 Catalog pivot
 

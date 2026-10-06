@@ -145,3 +145,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** `book-exchange-domain` now lists the 7 categories, 5 conditions, 5 jacket grades, the reserved rule (no other trade, no edit, no delete, 409), the one-transaction propose, which book goes to whom on completion, a 400/403/404/409 table, and the check order. `implement-from-spec` gains steps 7–9: update traceability, log, commit with task and FR IDs.
 
 **Decisions:** The error table and check order are copied from `specs/api.md`, not new rules.
+
+---
+
+### 2026-10-06 · M2.5 · B2 tests on a Postgres test database
+
+**Prompt:** Ali invoked /implement-from-spec for B2: point Vitest at a separate Postgres test database (`TEST_DATABASE_URL`), reset before each run. NFR-001.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain. Neon skill (`neon-postgres`) for connection choice: the test URL uses the direct (unpooled) host so schema changes work.
+
+**Plan:** `vitest.config.ts`, `tests/global-setup.ts`, new `tests/db.test.ts`, `.env.example`.
+
+**Result:** Created database `easy_exchange_test` in the same Neon project and saved its URL as `TEST_DATABASE_URL` in `.env.local` only (not committed). `vitest.config.ts` loads it with Vite's `loadEnv`, refuses to start if it is missing or equal to `DATABASE_URL`/`DATABASE_URL_UNPOOLED`, and gives the tests it as `DATABASE_URL`. Global setup checks `current_database()` is `easy_exchange_test`, drops and recreates the `public` schema, then runs `prisma db push`. New `tests/db.test.ts` (NFR-001) checks the tests talk to Postgres and to `easy_exchange_test`. `npm test`: 23 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** Prisma refuses `db push --force-reset` when run by an AI agent unless the user gives consent for that exact action. I did not bypass that with a consent variable. I reset the schema with SQL behind a database-name check instead, so the reset can only ever touch `easy_exchange_test`. Global setup switches to `prisma migrate deploy` once C1 adds migrations.
