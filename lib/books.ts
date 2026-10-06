@@ -2,6 +2,8 @@ import type { Book, Prisma } from "@prisma/client";
 import { lookupCover } from "@/lib/covers";
 import { prisma } from "@/lib/prisma";
 import {
+  isCategory,
+  isCondition,
   validateBookFields,
   type BookFieldsInput,
   type ConditionGrade,
@@ -107,12 +109,44 @@ export async function listMyBooks(actorId: string): Promise<{ ok: true; books: B
   return { ok: true, books: books.map(toView) };
 }
 
-export type BrowseQuery = { q?: string };
+export type BrowseQuery = {
+  q?: string;
+  category?: string;
+  condition?: string;
+  outOfPrint?: boolean;
+};
+
+type Params = Record<string, string | string[] | undefined>;
+
+export function parseBrowseParams(params: Params): BrowseQuery {
+  const first = (name: string) => {
+    const value = params[name];
+    return (Array.isArray(value) ? value[0] : value) ?? "";
+  };
+  return {
+    q: first("q"),
+    category: first("category"),
+    condition: first("condition"),
+    outOfPrint: first("oop") === "1",
+  };
+}
 
 export async function searchBooks(
   query: BrowseQuery = {},
 ): Promise<{ ok: true; books: BookView[] } | Failure> {
   const where: Prisma.BookWhereInput = {};
+  const category = query.category?.trim();
+  if (category) {
+    if (!isCategory(category)) return { ok: false, status: 400, message: "That filter isn't valid." };
+    where.category = category;
+  }
+  const condition = query.condition?.trim();
+  if (condition) {
+    if (!isCondition(condition)) return { ok: false, status: 400, message: "That filter isn't valid." };
+    where.condition = condition;
+  }
+  if (query.outOfPrint) where.outOfPrint = true;
+
   const q = query.q?.trim();
   if (q) {
     where.OR = [

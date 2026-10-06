@@ -1,17 +1,17 @@
 import { BookCard } from "@/components/book-card";
-import { searchBooks } from "@/lib/books";
+import { BrowseFilters } from "@/components/browse-filters";
+import { parseBrowseParams, searchBooks } from "@/lib/books";
 import { prisma } from "@/lib/prisma";
 
 export default async function BrowsePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const q = typeof params.q === "string" ? params.q : "";
-  const result = await searchBooks({ q });
+  const query = parseBrowseParams(await searchParams);
+  const result = await searchBooks(query);
   const books = result.ok ? result.books : [];
-  const filtered = q.trim() !== "";
+  const filtered = Boolean(query.q?.trim() || query.category || query.condition || query.outOfPrint);
   const anyListed = filtered ? (await prisma.book.count()) > 0 : books.length > 0;
 
   return (
@@ -21,28 +21,16 @@ export default async function BrowsePage({
         Architecture and art books, one for one. No money changes hands.
       </p>
 
-      <form method="get" action="/" className="mt-6 flex flex-wrap items-end gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <label htmlFor="browse-q" className="text-sm font-medium">
-            Search title or author
-          </label>
-          <input
-            id="browse-q"
-            name="q"
-            type="search"
-            defaultValue={q}
-            className="rounded border border-stone-400 bg-white px-2 py-1"
-          />
-        </div>
-        <button type="submit" className="rounded bg-stone-900 px-3 py-1.5 text-sm text-white">
-          Search
-        </button>
-        <a href="/" className="py-1.5 text-sm underline underline-offset-4">
-          Clear
-        </a>
-      </form>
+      <BrowseFilters query={query} />
 
-      {!anyListed ? (
+      {!result.ok ? (
+        <p role="alert" className="mt-6 text-stone-800">
+          {result.message}{" "}
+          <a href="/" className="underline underline-offset-4">
+            Clear
+          </a>
+        </p>
+      ) : !anyListed ? (
         <p className="mt-6 text-stone-700">No books are listed yet.</p>
       ) : books.length === 0 ? (
         <p className="mt-6 text-stone-700">

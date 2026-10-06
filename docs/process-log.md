@@ -259,3 +259,15 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** `searchBooks({ q })` trims `q`. Blank doesn't narrow; otherwise title or author must contain it, with Prisma `contains` + `mode: "insensitive"`, in id order. `/` is now Browse: a GET form with "Search title or author", Search, and Clear; a count line ("12 books" / "1 book"); "No books are listed yet." when the catalog is empty; "No books match these filters." when nothing matches. Four tests, one per FR-023 criterion. Local check against the test database: `?q=KOOLHAAS` shows 2 books, `?q=zzzz` the no-match message, `/` 12 books. `npm test`: 52 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Decisions:** The no-match copy says "filters" as `ui.md` wrote it, though only search exists until D2.
+
+---
+
+### 2026-10-06 · M4 · D2 filters
+
+**Prompt:** Ali invoked /implement-from-spec for D2: filters for category, condition, out of print; combinable with search; kept in the URL. FR-024.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain (book condition only, per Ali's answer).
+
+**Plan:** `lib/books.ts` (`parseBrowseParams`, filters in `searchBooks`), new `components/browse-filters.tsx`, `app/page.tsx`, `tests/browse.test.ts`.
+
+**Result:** `searchBooks` takes `{ q, category, condition, outOfPrint }`. Blank category or condition doesn't narrow; a value outside the enum returns 400 "That filter isn't valid."; `outOfPrint: true` keeps only out-of-print books. Every filter combines with AND. The form is a GET to `/` with `q`, `category` ("Any category"), `condition` ("Any condition"), and the "Out of print only" checkbox (`oop=1`), so the URL holds the state and `parseBrowseParams` reads it back into the form and the query. A bad value in the URL shows the message with a Clear link instead of a list. Seven tests, one per FR-024 criterion; AC7 also checks each filter has a label (NFR-004). Local check: `?category=PHOTOGRAPHY` 2 books, `?condition=FAIR&oop=1` 1 book, `?category=FICTION` the error. `npm test`: 59 passed, 0 failed. `npx tsc --noEmit`: 0.

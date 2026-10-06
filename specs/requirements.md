@@ -337,7 +337,7 @@ FR-008 to FR-016 were the v1 search, condition filter, book detail, and trade re
 | US-19 | FR-021, NFR-007 | AC1–AC5 | `tests/covers.test.ts` |
 | US-20 | FR-022, NFR-009 | AC1–AC2 | `tests/cover-image.test.ts` |
 | US-21 | FR-023 | AC1–AC4 | `tests/browse.test.ts` |
-| US-22 | FR-024 | AC1–AC7 | `tests/browse.test.ts` |
+| US-22 | FR-024, NFR-004 | AC1–AC7 | `tests/browse.test.ts` |
 | US-23 | FR-025 | AC1–AC2 | `tests/detail.test.ts` |
 | US-24 | FR-026 | AC1–AC7 | `tests/trades.test.ts` |
 | US-25 | FR-027 | AC1–AC3 | `tests/trades.test.ts` |
