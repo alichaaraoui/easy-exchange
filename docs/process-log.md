@@ -159,3 +159,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** Created database `easy_exchange_test` in the same Neon project and saved its URL as `TEST_DATABASE_URL` in `.env.local` only (not committed). `vitest.config.ts` loads it with Vite's `loadEnv`, refuses to start if it is missing or equal to `DATABASE_URL`/`DATABASE_URL_UNPOOLED`, and gives the tests it as `DATABASE_URL`. Global setup checks `current_database()` is `easy_exchange_test`, drops and recreates the `public` schema, then runs `prisma db push`. New `tests/db.test.ts` (NFR-001) checks the tests talk to Postgres and to `easy_exchange_test`. `npm test`: 23 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Decisions:** Prisma refuses `db push --force-reset` when run by an AI agent unless the user gives consent for that exact action. I did not bypass that with a consent variable. I reset the schema with SQL behind a database-name check instead, so the reset can only ever touch `easy_exchange_test`. Global setup switches to `prisma migrate deploy` once C1 adds migrations.
+
+---
+
+### 2026-10-06 · M3 · C1 catalog schema and migration
+
+**Prompt:** Ali invoked /implement-from-spec for C1: Category and JacketCondition enums; Book gets category (replaces genre), publisher, year, edition, outOfPrint, jacketCondition, coverUrl. Migrate. FR-017, FR-018, FR-019.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain (enum lists), neon-postgres (direct URL for migrations).
+
+**Plan:** `prisma/schema.prisma`, `prisma/migrations/` (new), `lib/validation.ts`, `lib/labels.ts` (new), `lib/books.ts`, `prisma/seed.ts`, `app/actions/books.ts`, `components/book-fields.tsx`, `components/book-form.tsx`, the four pages that showed genre, `tests/global-setup.ts`, `tests/books.test.ts`, `tests/seed.test.ts`, `tests/forms.test.ts`, new `tests/catalog.test.ts`.
+
+**Result:** Two migrations. `20261005000000_init` is the v1 schema exactly as production had it from `db push`; I marked it applied on production with `prisma migrate resolve --applied` instead of running it. `20261006000000_catalog_pivot` deletes all trades and books (Ali approved), adds the two enums, drops `genre`, and adds the seven columns. `prisma migrate deploy` ran cleanly on Neon production and on the test database (global setup now uses `migrate deploy` instead of `db push`). `validateBookFields` checks every field in the `api.md` order; `writeBook` uses it. Display labels live in `lib/labels.ts`. New `tests/catalog.test.ts`, one test per FR-017–FR-019 criterion. `npm test`: 32 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** The seed had to change in this task, because the old seed rows can't satisfy the new required columns. I wrote the 12 books from `data-model.md` into `prisma/seed.ts` now; C2 adds the seed tests and loads production. The add/edit form only swaps Genre for a Category select here, so until C4 adds the other fields, adding a book on the live site returns "Publisher is required." Production has no books from this push until C2 seeds it.

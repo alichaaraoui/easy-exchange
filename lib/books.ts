@@ -1,70 +1,33 @@
-import { Condition, type Book } from "@prisma/client";
+import type { Book } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
-  isCondition,
   validateBookFields,
   type BookFieldsInput,
   type ConditionGrade,
   type Failure,
 } from "@/lib/validation";
 
-export { CONDITIONS, isCondition } from "@/lib/validation";
+export { CATEGORIES, CONDITIONS, JACKET_CONDITIONS, isCondition } from "@/lib/validation";
 export type { ConditionGrade, Failure };
 
-export async function writeBook(input: {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  condition: string;
-  genre: string;
-  ownerId: string;
-}): Promise<{ ok: true; book: Book } | Failure> {
-  if (!isCondition(input.condition)) {
-    return {
-      ok: false,
-      status: 400,
-      message: "Condition must be NEW, LIKE_NEW, GOOD, FAIR, or POOR.",
-    };
-  }
+export async function writeBook(
+  input: BookFieldsInput & { id: string; ownerId: string; coverUrl?: string | null },
+): Promise<{ ok: true; book: Book } | Failure> {
+  const parsed = validateBookFields(input);
+  if (!parsed.ok) return parsed;
 
   const book = await prisma.book.create({
-    data: {
-      id: input.id,
-      title: input.title,
-      author: input.author,
-      isbn: input.isbn,
-      condition: input.condition as Condition,
-      genre: input.genre,
-      ownerId: input.ownerId,
-    },
+    data: { ...parsed.value, id: input.id, ownerId: input.ownerId, coverUrl: input.coverUrl ?? null },
   });
 
   return { ok: true, book };
 }
 
-export type BookView = {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  condition: ConditionGrade;
-  genre: string;
-  ownerId: string;
-  ownerName: string;
-};
+export type BookView = Book & { ownerName: string };
 
 function toView(book: Book & { owner: { name: string } }): BookView {
-  return {
-    id: book.id,
-    title: book.title,
-    author: book.author,
-    isbn: book.isbn,
-    condition: book.condition,
-    genre: book.genre,
-    ownerId: book.ownerId,
-    ownerName: book.owner.name,
-  };
+  const { owner, ...rest } = book;
+  return { ...rest, ownerName: owner.name };
 }
 
 function isSeedId(id: string) {
@@ -87,12 +50,8 @@ export async function createBook(
 
   const book = await prisma.book.create({
     data: {
+      ...parsed.value,
       id: `book_${crypto.randomUUID()}`,
-      title: parsed.value.title,
-      author: parsed.value.author,
-      isbn: parsed.value.isbn,
-      condition: parsed.value.condition,
-      genre: parsed.value.genre,
       ownerId: actorId,
     },
   });
@@ -116,13 +75,7 @@ export async function updateBook(
 
   const book = await prisma.book.update({
     where: { id: bookId },
-    data: {
-      title: parsed.value.title,
-      author: parsed.value.author,
-      isbn: parsed.value.isbn,
-      condition: parsed.value.condition,
-      genre: parsed.value.genre,
-    },
+    data: parsed.value,
   });
 
   return { ok: true, book };

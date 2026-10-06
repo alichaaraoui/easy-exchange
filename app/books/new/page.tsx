@@ -9,7 +9,7 @@ export default function NewBookPage() {
         <BookForm
           action={createBookAction}
           submitLabel="Add book"
-          values={{ title: "", author: "", isbn: "", condition: "GOOD", genre: "" }}
+          values={{ title: "", author: "", isbn: "", condition: "GOOD", category: "ARCHITECTURE_MONOGRAPH" }}
         />
       </div>
     </section>

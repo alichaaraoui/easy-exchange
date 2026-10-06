@@ -328,7 +328,7 @@ FR-008 to FR-016 were the v1 search, condition filter, book detail, and trade re
 | US-06 | FR-006 | AC1–AC2 | `tests/books.test.ts` |
 | US-07 | FR-007 | AC1–AC2 | `tests/books.test.ts` |
 | US-03, US-04 | NFR-004 | Labels on every control | `tests/forms.test.ts` |
-| US-01 | NFR-001 | Postgres test database | `tests/global-setup.ts`, `tests/db.test.ts` |
+| US-01 | NFR-001 | Postgres test database, migrations | `tests/global-setup.ts` (`prisma migrate deploy`), `tests/db.test.ts` |
 | all | NFR-002 | `tsc --noEmit` exits 0 | `npx tsc --noEmit` |
 | US-16 | FR-017 | AC1–AC3 | `tests/catalog.test.ts` |
 | US-17 | FR-018 | AC1–AC4 | `tests/catalog.test.ts` |

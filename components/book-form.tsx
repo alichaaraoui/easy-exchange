@@ -16,7 +16,7 @@ export function BookForm({
     author: string;
     isbn: string;
     condition: string;
-    genre: string;
+    category: string;
   };
   submitLabel: string;
 }) {

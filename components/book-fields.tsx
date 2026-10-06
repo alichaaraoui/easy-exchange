@@ -1,4 +1,5 @@
-import { CONDITIONS, conditionLabel } from "@/lib/validation";
+import { CATEGORY_LABELS, conditionLabel } from "@/lib/labels";
+import { CATEGORIES, CONDITIONS } from "@/lib/validation";
 
 export function BookFields({
   values,
@@ -9,7 +10,7 @@ export function BookFields({
     author: string;
     isbn: string;
     condition: string;
-    genre: string;
+    category: string;
   };
 }) {
   return (
@@ -66,15 +67,21 @@ export function BookFields({
         </select>
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="book-genre" className="text-sm font-medium">
-          Genre
+        <label htmlFor="book-category" className="text-sm font-medium">
+          Category
         </label>
-        <input
-          id="book-genre"
-          name="genre"
-          defaultValue={values.genre}
-          className="rounded border border-stone-400 px-2 py-1"
-        />
+        <select
+          id="book-category"
+          name="category"
+          defaultValue={values.category}
+          className="rounded border border-stone-400 bg-white px-2 py-1"
+        >
+          {CATEGORIES.map((category) => (
+            <option key={category} value={category}>
+              {CATEGORY_LABELS[category]}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { listAllBooks } from "@/lib/books";
-import { conditionLabel } from "@/lib/validation";
+import { categoryLabel, conditionLabel } from "@/lib/labels";
 
 export default async function AllBooksPage() {
   const { books } = await listAllBooks();
@@ -17,7 +17,7 @@ export default async function AllBooksPage() {
               <p className="font-medium">{book.title}</p>
               <p className="text-sm text-stone-700">{book.author}</p>
               <p className="mt-2 text-sm">
-                {conditionLabel(book.condition)} · {book.genre}
+                {conditionLabel(book.condition)} · {categoryLabel(book.category)}
               </p>
               <p className="text-sm text-stone-700">Owner: {book.ownerName}</p>
             </li>

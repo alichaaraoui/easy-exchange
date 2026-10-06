@@ -45,8 +45,11 @@ describe("FR-001 seed demo data", () => {
       title: "Not a real grade",
       author: "Test",
       isbn: "000",
+      category: "DESIGN",
+      publisher: "Test",
+      year: 2000,
       condition: "USED",
-      genre: "Test",
+      jacketCondition: "NONE",
       ownerId: "user_maya",
     });
 

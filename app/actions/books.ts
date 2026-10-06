@@ -12,8 +12,13 @@ function readBookForm(formData: FormData): BookFieldsInput {
     title: String(formData.get("title") ?? ""),
     author: String(formData.get("author") ?? ""),
     isbn: String(formData.get("isbn") ?? ""),
+    category: String(formData.get("category") ?? ""),
+    publisher: String(formData.get("publisher") ?? ""),
+    year: String(formData.get("year") ?? ""),
+    edition: String(formData.get("edition") ?? ""),
+    outOfPrint: formData.get("outOfPrint") !== null,
     condition: String(formData.get("condition") ?? ""),
-    genre: String(formData.get("genre") ?? ""),
+    jacketCondition: String(formData.get("jacketCondition") ?? ""),
   };
 }
 

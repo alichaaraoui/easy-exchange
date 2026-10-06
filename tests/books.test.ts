@@ -4,11 +4,29 @@ import { prisma } from "@/lib/prisma";
 import { resetAndSeed } from "./reset";
 
 const mayaBook = {
-  title: "Domain-Driven Design",
-  author: "Eric Evans",
-  isbn: "9780321125217",
+  title: "The Architecture of the City",
+  author: "Aldo Rossi",
+  isbn: "0262680432",
+  category: "ARCHITECTURAL_THEORY",
+  publisher: "MIT Press",
+  year: "1984",
+  edition: "",
+  outOfPrint: false,
   condition: "GOOD",
-  genre: "Software",
+  jacketCondition: "NONE",
+};
+
+const book01 = {
+  title: "Toward an Architecture",
+  author: "Le Corbusier",
+  isbn: "0892368225",
+  category: "ARCHITECTURAL_THEORY",
+  publisher: "Getty Research Institute",
+  year: 2007,
+  edition: "",
+  outOfPrint: false,
+  condition: "GOOD",
+  jacketCondition: "NONE",
 };
 
 beforeEach(async () => {
@@ -21,7 +39,8 @@ describe("FR-003 add a book I own", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.book.ownerId).toBe("user_maya");
-    expect(result.book.title).toBe("Domain-Driven Design");
+    expect(result.book.title).toBe("The Architecture of the City");
+    expect(result.book.category).toBe("ARCHITECTURAL_THEORY");
     const stored = await prisma.book.findUnique({ where: { id: result.book.id } });
     expect(stored?.ownerId).toBe("user_maya");
   });
@@ -44,30 +63,21 @@ describe("FR-003 add a book I own", () => {
 describe("FR-004 edit a book I own", () => {
   it("FR-004-AC1 changes the title and keeps the owner", async () => {
     const result = await updateBook("user_maya", "book_01", {
-      title: "Cleaner Code",
-      author: "Robert C. Martin",
-      isbn: "9780132350884",
-      condition: "GOOD",
-      genre: "Software",
+      ...book01,
+      title: "Towards a New Architecture",
       ownerId: "user_sam",
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.book.title).toBe("Cleaner Code");
+    expect(result.book.title).toBe("Towards a New Architecture");
     expect(result.book.ownerId).toBe("user_maya");
   });
 
   it("FR-004-AC2 rejects an edit from someone who does not own the book", async () => {
-    const result = await updateBook("user_jordan", "book_01", {
-      title: "Taken",
-      author: "Robert C. Martin",
-      isbn: "9780132350884",
-      condition: "GOOD",
-      genre: "Software",
-    });
+    const result = await updateBook("user_jordan", "book_01", { ...book01, title: "Taken" });
     expect(result).toMatchObject({ ok: false, status: 403 });
     const stored = await prisma.book.findUnique({ where: { id: "book_01" } });
-    expect(stored?.title).toBe("Clean Code");
+    expect(stored?.title).toBe("Toward an Architecture");
   });
 
   it("FR-004-AC3 returns 404 when the book does not exist", async () => {
@@ -78,13 +88,7 @@ describe("FR-004 edit a book I own", () => {
   });
 
   it("FR-004-AC4 rejects USED and leaves the condition unchanged", async () => {
-    const result = await updateBook("user_maya", "book_01", {
-      title: "Clean Code",
-      author: "Robert C. Martin",
-      isbn: "9780132350884",
-      condition: "USED",
-      genre: "Software",
-    });
+    const result = await updateBook("user_maya", "book_01", { ...book01, condition: "USED" });
     expect(result).toMatchObject({ ok: false, status: 400 });
     const stored = await prisma.book.findUnique({ where: { id: "book_01" } });
     expect(stored?.condition).toBe("GOOD");

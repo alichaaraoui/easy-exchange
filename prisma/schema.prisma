@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
@@ -17,16 +17,22 @@ model User {
 }
 
 model Book {
-  id           String    @id
-  title        String
-  author       String
-  isbn         String
-  condition    Condition
-  genre        String
-  ownerId      String
-  owner        User      @relation("OwnedBooks", fields: [ownerId], references: [id])
-  offeredIn    Trade[]   @relation("OfferedBook")
-  requestedIn  Trade[]   @relation("RequestedBook")
+  id              String          @id
+  title           String
+  author          String
+  isbn            String
+  category        Category
+  publisher       String
+  year            Int
+  edition         String          @default("")
+  outOfPrint      Boolean         @default(false)
+  condition       Condition
+  jacketCondition JacketCondition
+  coverUrl        String?
+  ownerId         String
+  owner           User            @relation("OwnedBooks", fields: [ownerId], references: [id])
+  offeredIn       Trade[]         @relation("OfferedBook")
+  requestedIn     Trade[]         @relation("RequestedBook")
 }
 
 model Trade {
@@ -50,6 +56,24 @@ enum Condition {
   GOOD
   FAIR
   POOR
+}
+
+enum Category {
+  ARCHITECTURE_MONOGRAPH
+  ARCHITECTURAL_THEORY
+  ART_HISTORY
+  EXHIBITION_CATALOGUE
+  PHOTOGRAPHY
+  DESIGN
+  ARTIST_BOOK_ZINE
+}
+
+enum JacketCondition {
+  NONE
+  POOR
+  FAIR
+  GOOD
+  FINE
 }
 
 enum TradeStatus {

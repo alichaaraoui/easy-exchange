@@ -1,7 +1,7 @@
 import { deleteBookAction } from "@/app/actions/books";
 import { readActiveUser } from "@/app/actions/session";
 import { listMyBooks } from "@/lib/books";
-import { conditionLabel } from "@/lib/validation";
+import { categoryLabel, conditionLabel } from "@/lib/labels";
 
 export default async function ShelfPage() {
   const user = await readActiveUser();
@@ -20,7 +20,7 @@ export default async function ShelfPage() {
               <p className="font-medium">{book.title}</p>
               <p className="text-sm text-stone-700">{book.author}</p>
               <p className="mt-2 text-sm">
-                {conditionLabel(book.condition)} · {book.genre}
+                {conditionLabel(book.condition)} · {categoryLabel(book.category)}
               </p>
               <p className="text-sm text-stone-700">ISBN {book.isbn}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">

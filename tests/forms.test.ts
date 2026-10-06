@@ -8,16 +8,16 @@ describe("NFR-004 visible labels", () => {
     const html = renderToStaticMarkup(
       BookFields({
         values: {
-          title: "Clean Code",
-          author: "Robert C. Martin",
-          isbn: "9780132350884",
+          title: "Toward an Architecture",
+          author: "Le Corbusier",
+          isbn: "0892368225",
           condition: "GOOD",
-          genre: "Software",
+          category: "ARCHITECTURAL_THEORY",
         },
       }),
     );
 
-    for (const id of ["book-title", "book-author", "book-isbn", "book-condition", "book-genre"]) {
+    for (const id of ["book-title", "book-author", "book-isbn", "book-condition", "book-category"]) {
       expect(html).toContain(`for="${id}"`);
       expect(html).toContain(`id="${id}"`);
     }
@@ -25,7 +25,7 @@ describe("NFR-004 visible labels", () => {
     expect(html).toContain(">Author<");
     expect(html).toContain(">ISBN<");
     expect(html).toContain(">Condition<");
-    expect(html).toContain(">Genre<");
+    expect(html).toContain(">Category<");
   });
 
   it("ties a label to the demo-user switcher", () => {

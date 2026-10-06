@@ -23,7 +23,7 @@ Status: ✅ done · ⬜ to do
 
 | # | Task | Done when |
 | --- | --- | --- |
-| C1 ⬜ | Schema: Category and JacketCondition enums; Book gets category (replaces genre), publisher, year, edition, outOfPrint, jacketCondition, coverUrl. Migrate. | `prisma migrate` runs cleanly on Neon; types compile. |
+| C1 ✅ | Schema: Category and JacketCondition enums; Book gets category (replaces genre), publisher, year, edition, outOfPrint, jacketCondition, coverUrl. Migrate. | `prisma migrate` runs cleanly on Neon; types compile. |
 | C2 ⬜ | Seed the 12 books from plan v2 section 9 with fixed ids. | Seed test checks all 12 books, owners, and categories. |
 | C3 ⬜ | Cover lookup in `lib/covers.ts`: on create or ISBN change, check Open Library and save `coverUrl` or `null`. | Tests cover found, not found, and Open Library unreachable (book still saves). |
 | C4 ⬜ | Add/edit forms get every new field with labels; validation for year range and enum values. | Form and validation tests pass; NFR labels test still passes. |

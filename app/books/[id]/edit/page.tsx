@@ -51,7 +51,7 @@ export default async function EditBookPage({
             author: book.author,
             isbn: book.isbn,
             condition: book.condition,
-            genre: book.genre,
+            category: book.category,
           }}
         />
       </div>

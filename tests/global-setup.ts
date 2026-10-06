@@ -19,7 +19,7 @@ export default async function setup() {
     await db.$disconnect();
   }
 
-  execSync("npx prisma db push --skip-generate", {
+  execSync("npx prisma migrate deploy", {
     stdio: "pipe",
     env: { ...process.env, DATABASE_URL: url, DATABASE_URL_UNPOOLED: url },
   });
