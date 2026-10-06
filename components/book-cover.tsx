@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function coverAlt(title: string, author: string) {
   return `Cover of ${title} by ${author}`;
@@ -18,6 +18,12 @@ export function BookCover({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+  }, [coverUrl]);
   const box = `aspect-[2/3] w-full overflow-hidden rounded bg-stone-200 ${className}`;
 
   if (!coverUrl || failed) {
@@ -38,6 +44,7 @@ export function BookCover({
     <div className={box}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imgRef}
         src={coverUrl}
         alt={coverAlt(title, author)}
         loading="lazy"

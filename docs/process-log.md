@@ -229,3 +229,19 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** `BookCover` renders a 2:3 box: an `<img>` with alt "Cover of {title} by {author}" when there's a `coverUrl`, otherwise a placeholder `div` (role `img`, same label) with the title and author as text. If a saved URL ever fails to load, `onError` swaps in the placeholder, so the page never shows a broken image. All books is a 2/3/4-column grid of `BookCard`s (cover, title, author, category, condition, owner, "Out of print" badge); the shelf shows a small cover beside each book. Two tests, one per FR-022 criterion; AC2 uses the seeded book_08 and book_12. Local check against the test database: 10 `<img>` and 2 placeholders on `/`. `npm test`: 48 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Decisions:** Plain `<img>`, not `next/image`, so no remote-image config or optimizer is involved. Cards don't link to `/books/{id}` yet because that page is D3; the link goes in with D3. The page heading and intro still say "All books"; the Browse copy from `ui.md` arrives with search in D1/D2.
+
+---
+
+### 2026-10-06 · M3 · Phase C review
+
+**Prompt:** End-of-phase Bugbot review of Phase C (C1–C5), fixing real bugs.
+
+**Mode / Skill:** No Bugbot subagent is available in this environment (`review-bugbot` falls back to an in-place review), so I reviewed the Phase C diff (`531fae4..91e2d18`) myself.
+
+**Findings:**
+| Severity | Location | Finding | Action |
+| --- | --- | --- | --- |
+| Medium | `components/book-cover.tsx` | If a cover fails to load before React hydrates, `onError` never fires and the broken image stays (NFR-009). | Fixed: after mount, a ref check (`complete && naturalWidth === 0`) switches to the placeholder. |
+| Medium | `lib/books.ts` `deleteBook` | Deleting a book that has a closed trade hits the Trade foreign key and throws. | Already scheduled: FR-032-AC3 in E3 deletes closed trades with the book. No trades exist on live yet. |
+
+**Result:** `npm test`: 48 passed, 0 failed. `npx tsc --noEmit`: 0.
