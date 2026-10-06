@@ -1,18 +1,15 @@
 import { Condition, type Book } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  isCondition,
+  validateBookFields,
+  type BookFieldsInput,
+  type ConditionGrade,
+  type Failure,
+} from "@/lib/validation";
 
-export const CONDITIONS = ["NEW", "LIKE_NEW", "GOOD", "FAIR", "POOR"] as const;
-export type ConditionGrade = (typeof CONDITIONS)[number];
-
-export type Failure = {
-  ok: false;
-  status: 400 | 403 | 404 | 409;
-  message: string;
-};
-
-export function isCondition(value: string): value is ConditionGrade {
-  return (CONDITIONS as readonly string[]).includes(value);
-}
+export { CONDITIONS, isCondition } from "@/lib/validation";
+export type { ConditionGrade, Failure };
 
 export async function writeBook(input: {
   id: string;
@@ -44,4 +41,119 @@ export async function writeBook(input: {
   });
 
   return { ok: true, book };
+}
+
+export type BookView = {
+  id: string;
+  title: string;
+  author: string;
+  isbn: string;
+  condition: ConditionGrade;
+  genre: string;
+  ownerId: string;
+  ownerName: string;
+};
+
+function toView(book: Book & { owner: { name: string } }): BookView {
+  return {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    isbn: book.isbn,
+    condition: book.condition,
+    genre: book.genre,
+    ownerId: book.ownerId,
+    ownerName: book.owner.name,
+  };
+}
+
+function isSeedId(id: string) {
+  return /^book_\d+$/.test(id);
+}
+
+function compareShelfIds(a: string, b: string) {
+  const aSeed = isSeedId(a);
+  const bSeed = isSeedId(b);
+  if (aSeed !== bSeed) return aSeed ? -1 : 1;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export async function createBook(
+  actorId: string,
+  input: BookFieldsInput,
+): Promise<{ ok: true; book: Book } | Failure> {
+  const parsed = validateBookFields(input);
+  if (!parsed.ok) return parsed;
+
+  const book = await prisma.book.create({
+    data: {
+      id: `book_${crypto.randomUUID()}`,
+      title: parsed.value.title,
+      author: parsed.value.author,
+      isbn: parsed.value.isbn,
+      condition: parsed.value.condition,
+      genre: parsed.value.genre,
+      ownerId: actorId,
+    },
+  });
+
+  return { ok: true, book };
+}
+
+export async function updateBook(
+  actorId: string,
+  bookId: string,
+  input: BookFieldsInput,
+): Promise<{ ok: true; book: Book } | Failure> {
+  const existing = await prisma.book.findUnique({ where: { id: bookId } });
+  if (!existing) return { ok: false, status: 404, message: "That book is not listed." };
+  if (existing.ownerId !== actorId) {
+    return { ok: false, status: 403, message: "You can only edit a book you own." };
+  }
+
+  const parsed = validateBookFields(input);
+  if (!parsed.ok) return parsed;
+
+  const book = await prisma.book.update({
+    where: { id: bookId },
+    data: {
+      title: parsed.value.title,
+      author: parsed.value.author,
+      isbn: parsed.value.isbn,
+      condition: parsed.value.condition,
+      genre: parsed.value.genre,
+    },
+  });
+
+  return { ok: true, book };
+}
+
+export async function deleteBook(actorId: string, bookId: string): Promise<{ ok: true } | Failure> {
+  const existing = await prisma.book.findUnique({ where: { id: bookId } });
+  if (!existing) return { ok: false, status: 404, message: "That book is not listed." };
+  if (existing.ownerId !== actorId) {
+    return { ok: false, status: 403, message: "You can only delete a book you own." };
+  }
+
+  await prisma.book.delete({ where: { id: bookId } });
+  return { ok: true };
+}
+
+export async function listMyBooks(actorId: string): Promise<{ ok: true; books: BookView[] }> {
+  const books = await prisma.book.findMany({
+    where: { ownerId: actorId },
+    include: { owner: true },
+  });
+  books.sort((a, b) => compareShelfIds(a.id, b.id));
+  return { ok: true, books: books.map(toView) };
+}
+
+export async function listAllBooks(): Promise<{ ok: true; books: BookView[] }> {
+  const books = await prisma.book.findMany({ include: { owner: true } });
+  books.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return { ok: true, books: books.map(toView) };
+}
+
+export async function findBook(bookId: string) {
+  return prisma.book.findUnique({ where: { id: bookId } });
 }

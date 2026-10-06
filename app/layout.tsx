@@ -21,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header
             users={users}
             activeUserId={active.id}
-            showBookLinks={false}
+            showBookLinks={true}
             switchAction={setActiveUserAction}
           />
         ) : (
