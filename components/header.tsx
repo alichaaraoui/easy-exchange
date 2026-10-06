@@ -11,7 +11,7 @@ export function Header({
 }) {
   return (
     <header className="border-b border-stone-300 bg-white">
-      <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <a href="/" className="text-lg font-semibold tracking-tight text-stone-950">
             Easy Exchange

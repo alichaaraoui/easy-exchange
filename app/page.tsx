@@ -1,5 +1,5 @@
 import { listAllBooks } from "@/lib/books";
-import { categoryLabel, conditionLabel } from "@/lib/labels";
+import { BookCard } from "@/components/book-card";
 
 export default async function AllBooksPage() {
   const { books } = await listAllBooks();
@@ -11,15 +11,10 @@ export default async function AllBooksPage() {
       {books.length === 0 ? (
         <p className="mt-6 text-stone-700">No books are listed yet.</p>
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
+        <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
-            <li key={book.id} className="rounded border border-stone-300 bg-white px-4 py-3">
-              <p className="font-medium">{book.title}</p>
-              <p className="text-sm text-stone-700">{book.author}</p>
-              <p className="mt-2 text-sm">
-                {conditionLabel(book.condition)} · {categoryLabel(book.category)}
-              </p>
-              <p className="text-sm text-stone-700">Owner: {book.ownerName}</p>
+            <li key={book.id}>
+              <BookCard book={book} />
             </li>
           ))}
         </ul>

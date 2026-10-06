@@ -215,3 +215,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** The form has the ten fields in the `ui.md` order, each with a `<label htmlFor>`: Title, Author, ISBN (with "We look up the cover on Open Library by ISBN."), Category ("Choose a category" first), Publisher, Year (number, min 1450, max this year), "Edition (optional)", "Out of print" checkbox, Condition, Jacket condition. On a 400, the action returns the submitted values and the form re-renders with them, as `ui.md` asks. Tests: NFR-004 now checks all ten labels; new tests check the option lists and labels, that edit is filled with stored values, the checkbox parse, year bounds through the form path, and enum rejection with the field named in the message. Local check on port 43123 against the test database: `/books/new` and `/books/book_01/edit` return 200 with every field. `npm test`: 46 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Decisions:** The browser `min`/`max` on Year are a convenience only; the server check in `validateBookFields` is the rule.
+
+---
+
+### 2026-10-06 · M3 · C5 covers and placeholders on cards and shelf
+
+**Prompt:** Ali invoked /implement-from-spec for C5: book cards and shelf show the cover or the designed placeholder, with alt text. FR-022, NFR-009.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** new `components/book-cover.tsx`, new `components/book-card.tsx`, `app/page.tsx`, `app/shelf/page.tsx`, `app/layout.tsx` and `components/header.tsx` (wider container for the grid), new `tests/cover-image.test.ts`.
+
+**Result:** `BookCover` renders a 2:3 box: an `<img>` with alt "Cover of {title} by {author}" when there's a `coverUrl`, otherwise a placeholder `div` (role `img`, same label) with the title and author as text. If a saved URL ever fails to load, `onError` swaps in the placeholder, so the page never shows a broken image. All books is a 2/3/4-column grid of `BookCard`s (cover, title, author, category, condition, owner, "Out of print" badge); the shelf shows a small cover beside each book. Two tests, one per FR-022 criterion; AC2 uses the seeded book_08 and book_12. Local check against the test database: 10 `<img>` and 2 placeholders on `/`. `npm test`: 48 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Decisions:** Plain `<img>`, not `next/image`, so no remote-image config or optimizer is involved. Cards don't link to `/books/{id}` yet because that page is D3; the link goes in with D3. The page heading and intro still say "All books"; the Browse copy from `ui.md` arrives with search in D1/D2.
