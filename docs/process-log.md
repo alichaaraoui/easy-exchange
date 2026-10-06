@@ -187,3 +187,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** Four FR-020 tests: every field of book_01–book_12 matches `data-model.md`; book_08 and book_12 have no cover and the other ten have their Open Library URL; reseeding keeps 12 books and 3 users; a category outside the seven is rejected. Before writing the cover expectations I requested all 12 cover URLs with `?default=false`: ten returned 200 and `0262220156` and `0894390449` returned 404, matching the plan. Seeded production with `tsx prisma/seed.ts`. `npm test`: 36 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Problem found:** the Vercel project isn't connected to GitHub, so pushes to `main` weren't deploying. After C1 migrated production, the old live build returned 500. I deployed `main` with `vercel deploy --prod` from a clean `git archive` of HEAD (so no `.env` files were uploaded), and the live site is back at 200 with the new catalog. `vercel git connect` failed because Ali's Vercel account has no GitHub login connection. I asked Ali to connect it; until he does, I deploy each push the same way.
+
+---
+
+### 2026-10-06 · M3 · C3 cover lookup
+
+**Prompt:** Ali invoked /implement-from-spec for C3: cover lookup in `lib/covers.ts`. On create or ISBN change, check Open Library and save `coverUrl` or `null`. FR-021, NFR-007.
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** new `lib/covers.ts`, `lib/books.ts` (create and update call it), new `tests/setup.ts` (no real network in tests), `vitest.config.ts`, new `tests/covers.test.ts`.
+
+**Result:** `lookupCover(isbn)` strips spaces and hyphens, requests `https://covers.openlibrary.org/b/isbn/{ISBN}-L.jpg?default=false` with a 3-second abort, and returns the URL without `?default=false` on 200, or null on anything else. It never throws. `createBook` always looks up; `updateBook` looks up only when the trimmed ISBN differs from the stored one. `tests/setup.ts` replaces `fetch` with a 404 stub before every test, so no test touches the network. Five tests, one per FR-021 criterion. Checked against the real Open Library: `1885254008` returns its URL, `0262220156` returns null. `npm test`: 41 passed, 0 failed. `npx tsc --noEmit`: 0. Deployed with the CLI (Vercel still isn't connected to GitHub).
+
+**Decisions:** AC3 has two halves. "Unreachable" goes through `createBook` with a fetch that throws. "Doesn't answer within 3 seconds" calls `lookupCover` with a 20 ms timeout and a fetch that never answers, plus a check that the default timeout is 3000 ms, so the suite doesn't wait 3 real seconds.

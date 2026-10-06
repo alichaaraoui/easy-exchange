@@ -1,4 +1,5 @@
 import type { Book } from "@prisma/client";
+import { lookupCover } from "@/lib/covers";
 import { prisma } from "@/lib/prisma";
 import {
   validateBookFields,
@@ -48,11 +49,13 @@ export async function createBook(
   const parsed = validateBookFields(input);
   if (!parsed.ok) return parsed;
 
+  const coverUrl = await lookupCover(parsed.value.isbn);
   const book = await prisma.book.create({
     data: {
       ...parsed.value,
       id: `book_${crypto.randomUUID()}`,
       ownerId: actorId,
+      coverUrl,
     },
   });
 
@@ -73,9 +76,12 @@ export async function updateBook(
   const parsed = validateBookFields(input);
   if (!parsed.ok) return parsed;
 
+  const isbnChanged = parsed.value.isbn !== existing.isbn;
   const book = await prisma.book.update({
     where: { id: bookId },
-    data: parsed.value,
+    data: isbnChanged
+      ? { ...parsed.value, coverUrl: await lookupCover(parsed.value.isbn) }
+      : parsed.value,
   });
 
   return { ok: true, book };

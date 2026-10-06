@@ -23,6 +23,7 @@ export default defineConfig({
     environment: "node",
     fileParallelism: false,
     globalSetup: "./tests/global-setup.ts",
+    setupFiles: ["./tests/setup.ts"],
     env: {
       DATABASE_URL: testDatabaseUrl,
       DATABASE_URL_UNPOOLED: testDatabaseUrl,
