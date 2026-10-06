@@ -98,3 +98,15 @@ The "My judgment" line is the part that matters: what was kept, rejected, or rew
 **Result:** `main` fast-forwarded from `a7afbbe` to `91f7a3e` (`chore(deploy): switch Prisma to Postgres for Vercel`, `chore(deploy): generate Prisma client during build`). `prisma/schema.prisma` now uses `postgresql` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`. Committed `.agents/skills/neon`, `.agents/skills/neon-postgres`, the `.claude/skills` symlinks to them, and `skills-lock.json` (source `neondatabase/agent-skills`). `npx tsc --noEmit` exits 0. `npm test` fails in global setup because `vitest.config.ts` still points at `file:./test.db`, which a Postgres schema can't use. That is B2's job, and it stays failing until B2.
 
 **Decisions:** Fast-forward, so no merge commit. I did not touch the test setup in B1 because the task order puts the Postgres test database in B2.
+
+---
+
+### 2026-10-06 · Specs v2 · A1 plan v2 and task list
+
+**Prompt:** Task A1: commit plan v2 and the task list. Log that plan v2 was drafted with Claude Code from my answers.
+
+**Mode / Skill:** Agent. No project skill.
+
+**Result:** Committed `docs/plan.md` (plan v2: architecture and art books, collector fields, categories, Open Library covers, Neon Postgres, decisions D1–D6, milestones M1–M7) and `docs/tasks.md` (phases A–G). B1 and A1 are marked done.
+
+**Decisions:** Plan v2 was drafted with Claude Code from Ali's answers to its questions; I committed it as written and did not edit its content. Plan v1 stays in git history, as the plan says.
