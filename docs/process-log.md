@@ -39,3 +39,15 @@ The "My judgment" line is the part that matters: what was kept, rejected, or rew
 **Result:** Copied `requirements-engineering`, `spec-writer`, `book-exchange-domain`, and `implement-from-spec` as they were written. Added `.gitignore`. Left `.cursor/skills/.gitkeep`.
 
 **My judgment:** I did not edit the skill text. I ignored `.DS_Store` instead of committing it.
+
+---
+
+### 2026-10-06 · Planning · Plan rewrite
+
+**Prompt:** Rewrite `docs/plan.md` in the first person. Remove every mention of "the playbook". Give a real reason for Next.js App Router, TypeScript, Tailwind, Prisma, SQLite, and Vitest. List later features: chat, ratings, book photos, real login, campus meetups.
+
+**Mode / Skill:** book-exchange-domain
+
+**Result:** Rewrote the plan in my voice. Must-have stays list, browse/search, propose, accept/decline, cancel, complete, and the ownership swap. Later list is the five features above. Payments and shipping stay out. Trade actors match the domain skill: only the recipient accepts or declines, only the requester cancels a PENDING trade, either party completes an ACCEPTED trade.
+
+**My judgment:** I kept Playwright because M5 still needs one end-to-end trade test, and I wrote a reason for it. I moved real login from "out of scope" to "later" because that is where I was told to put it. I did not add chat, ratings, photos, or meetups to the MVP. I left edit/delete of a reserved book, ISBN format, and genre vocabulary as open questions.
