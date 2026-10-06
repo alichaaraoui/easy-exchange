@@ -173,3 +173,17 @@ Also approved: test database `easy_exchange_test` in the same Neon project; seed
 **Result:** Two migrations. `20261005000000_init` is the v1 schema exactly as production had it from `db push`; I marked it applied on production with `prisma migrate resolve --applied` instead of running it. `20261006000000_catalog_pivot` deletes all trades and books (Ali approved), adds the two enums, drops `genre`, and adds the seven columns. `prisma migrate deploy` ran cleanly on Neon production and on the test database (global setup now uses `migrate deploy` instead of `db push`). `validateBookFields` checks every field in the `api.md` order; `writeBook` uses it. Display labels live in `lib/labels.ts`. New `tests/catalog.test.ts`, one test per FR-017–FR-019 criterion. `npm test`: 32 passed, 0 failed. `npx tsc --noEmit`: 0.
 
 **Decisions:** The seed had to change in this task, because the old seed rows can't satisfy the new required columns. I wrote the 12 books from `data-model.md` into `prisma/seed.ts` now; C2 adds the seed tests and loads production. The add/edit form only swaps Genre for a Category select here, so until C4 adds the other fields, adding a book on the live site returns "Publisher is required." Production has no books from this push until C2 seeds it.
+
+---
+
+### 2026-10-06 · M3 · C2 seed the 12 books
+
+**Prompt:** Ali invoked /implement-from-spec for C2: seed the 12 books from plan v2 section 9 with fixed ids. FR-020 (and FR-001).
+
+**Mode / Skill:** implement-from-spec, book-exchange-domain.
+
+**Plan:** `tests/seed.test.ts` (FR-020-AC1–AC4); the seed data itself went in with C1. Load production.
+
+**Result:** Four FR-020 tests: every field of book_01–book_12 matches `data-model.md`; book_08 and book_12 have no cover and the other ten have their Open Library URL; reseeding keeps 12 books and 3 users; a category outside the seven is rejected. Before writing the cover expectations I requested all 12 cover URLs with `?default=false`: ten returned 200 and `0262220156` and `0894390449` returned 404, matching the plan. Seeded production with `tsx prisma/seed.ts`. `npm test`: 36 passed, 0 failed. `npx tsc --noEmit`: 0.
+
+**Problem found:** the Vercel project isn't connected to GitHub, so pushes to `main` weren't deploying. After C1 migrated production, the old live build returned 500. I deployed `main` with `vercel deploy --prod` from a clean `git archive` of HEAD (so no `.env` files were uploaded), and the live site is back at 200 with the new catalog. `vercel git connect` failed because Ali's Vercel account has no GitHub login connection. I asked Ali to connect it; until he does, I deploy each push the same way.
